@@ -363,14 +363,21 @@ function openEditModal(id) {
   document.getElementById('itemDesc').value = item.description || '';
   document.getElementById('itemTags').value = (item.tags || []).join(', ');
   document.getElementById('itemFeatured').checked = !!item.is_featured;
-  document.getElementById('itemThumbUrl').value = item.thumbnail_url || '';
+  let thumbUrl = item.thumbnail_url || '';
+  if (!thumbUrl && item.type === 'youtube') {
+    const ytId = getYoutubeId(item.source_url || item.embed_url);
+    if (ytId) {
+      thumbUrl = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+    }
+  }
+  document.getElementById('itemThumbUrl').value = thumbUrl;
   document.getElementById('itemFeaturedThumbUrl').value = item.featured_thumb || '';
 
   pendingThumbFile = null;
   pendingFeaturedThumbFile = null;
 
   // Show thumb preview
-  setThumbPreview(item.thumbnail_url);
+  setThumbPreview(thumbUrl);
   setFeaturedThumbPreview(item.featured_thumb);
 
   // Load sub-items
@@ -388,8 +395,36 @@ function closeItemModal() {
   itemModal.style.display = 'none';
 }
 
-// Type change -> show/hide sub-items
-document.getElementById('itemType')?.addEventListener('change', updateTypeFields);
+function getYoutubeId(url) {
+  if (!url) return "";
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : "";
+}
+
+function autoFillYoutubeThumbnail() {
+  const type = document.getElementById('itemType')?.value;
+  const sourceUrl = document.getElementById('itemSourceUrl')?.value.trim() || '';
+  const embedUrl = document.getElementById('itemEmbedUrl')?.value.trim() || '';
+  const thumbUrlInput = document.getElementById('itemThumbUrl');
+  
+  if (type === 'youtube' && !pendingThumbFile && (!thumbUrlInput.value || thumbUrlInput.value.includes('img.youtube.com'))) {
+    const ytId = getYoutubeId(sourceUrl || embedUrl);
+    if (ytId) {
+      const computedThumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+      thumbUrlInput.value = computedThumb;
+      setThumbPreview(computedThumb);
+    }
+  }
+}
+
+// Type change -> show/hide sub-items & auto fill yt thumbnail
+document.getElementById('itemType')?.addEventListener('change', () => {
+  updateTypeFields();
+  autoFillYoutubeThumbnail();
+});
+document.getElementById('itemSourceUrl')?.addEventListener('input', autoFillYoutubeThumbnail);
+document.getElementById('itemEmbedUrl')?.addEventListener('input', autoFillYoutubeThumbnail);
 
 // Category change -> prompt for new category
 // Category change -> show/hide inline new category text input

@@ -89,6 +89,14 @@ function buildPortfolioData(items, subs) {
   });
 
   portfolioData = (items || []).map(row => {
+    let thumb = row.thumbnail_url || '';
+    if (!thumb && row.type === 'youtube') {
+      const ytId = getYoutubeId(row.source_url || row.embed_url);
+      if (ytId) {
+        thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+      }
+    }
+
     const item = {
       id: row.id,
       title: row.title,
@@ -96,7 +104,7 @@ function buildPortfolioData(items, subs) {
       type: row.type,
       sourceUrl: row.source_url || '',
       embedUrl: row.embed_url || '',
-      thumbnailUrl: row.thumbnail_url || '',
+      thumbnailUrl: thumb,
       description: row.description || '',
       tags: row.tags || [],
     };
@@ -160,6 +168,13 @@ function escapeHtml(str) {
 }
 function escapeAttr(str) {
   return escapeHtml(str).replace(/"/g, "&quot;");
+}
+
+function getYoutubeId(url) {
+  if (!url) return "";
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : "";
 }
 
 function getIgShortcode(url) {
