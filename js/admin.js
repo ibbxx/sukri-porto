@@ -223,53 +223,68 @@ function renderItems() {
 
   if (countEl) countEl.textContent = `${filtered.length} items`;
 
+  if (!filtered.length) {
+    grid.innerHTML = `
+      <div class="items-empty">
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+        <div style="font-size:13px; font-weight:600; margin-bottom:4px;">Tidak ada item ditemukan</div>
+        <div style="font-size:11px;">Coba ubah filter atau kata kunci pencarian.</div>
+      </div>
+    `;
+    return;
+  }
+
   grid.innerHTML = filtered.map(item => {
     const thumb = item.thumbnail_url || '';
     const hasSubs = allSubs.some(s => s.parent_id === item.id);
     const subsCount = allSubs.filter(s => s.parent_id === item.id).length;
 
+    const thumbHtml = thumb
+      ? `<img src="${esc(thumb)}" alt="" onerror="this.parentElement.innerHTML='<div class=\\'item-thumb-empty\\'><svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'28\\' height=\\'28\\' viewBox=\\'0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\'><rect width=\\'18\\' height=\\'18\\' x=\\'3\\' y=\\'3\\' rx=\\'2\\' ry=\\'2\\'/><circle cx=\\'9\\' cy=\\'9\\' r=\\'2\\'/><path d=\\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\\'/></svg></div>'"/>`
+      : `<div class="item-thumb-empty">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+        </div>`;
+
     return `
-      <div class="bg-zinc-900/40 border border-zinc-800/80 hover:border-zinc-700/80 hover:bg-zinc-900/60 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-200" data-id="${esc(item.id)}">
-        <!-- Left Section: Sort Order, Thumbnail, Details -->
-        <div class="flex items-center gap-4 min-w-0 flex-1">
-          <!-- Sort Order / Urutan -->
-          <div class="flex-shrink-0 text-center min-w-[32px] font-mono text-xs font-bold text-zinc-500 bg-zinc-900 border border-zinc-800/80 px-1.5 py-1 rounded-md" title="Urutan / Sort Order">
-            #${esc(item.sort_order ?? 0)}
-          </div>
-          
+      <div class="item-card" data-id="${esc(item.id)}">
+        <div class="item-card-inner">
           <!-- Thumbnail -->
-          <div class="w-16 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-950 border border-zinc-800 flex items-center justify-center relative shadow-inner">
-            ${thumb ? `<img src="${esc(thumb)}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'"/>` : `<span class="text-xl opacity-40">🖼</span>`}
+          <div class="item-thumb-wrap">
+            <div class="item-sort-badge">#${esc(item.sort_order ?? 0)}</div>
+            ${thumbHtml}
           </div>
 
-          <!-- Item Details (Title, Category, Tags, Description) -->
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center gap-2 flex-wrap mb-1">
-              <h4 class="font-semibold text-sm text-zinc-100 truncate max-w-[200px] sm:max-w-[350px] md:max-w-[450px]" title="${esc(item.title)}">${esc(item.title)}</h4>
-              
-              <!-- Badges -->
-              <span class="px-2 py-0.5 rounded bg-zinc-800/85 border border-zinc-750 text-zinc-350 text-[10px] font-semibold tracking-wide uppercase">${esc(item.category)}</span>
-              <span class="px-2 py-0.5 rounded bg-zinc-850/60 text-zinc-400 text-[10px] font-medium capitalize">${esc(item.type)}</span>
-              
-              ${item.is_featured ? `<span class="bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">★ Featured</span>` : ''}
-              ${hasSubs ? `<span class="bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-semibold px-2 py-0.5 rounded-full">${subsCount} sub-items</span>` : ''}
+          <!-- Content -->
+          <div class="item-content">
+            <div class="item-title-row">
+              <h4 title="${esc(item.title)}">${esc(item.title)}</h4>
             </div>
-            
-            <p class="text-xs text-zinc-400 line-clamp-1 leading-relaxed max-w-[300px] sm:max-w-[500px] md:max-w-[650px]">${esc(item.description || 'Tidak ada deskripsi.')}</p>
-            
-            <!-- Tags -->
+
+            <div class="item-badges">
+              <span class="badge-cat">${esc(item.category)}</span>
+              <span class="badge-type">${esc(item.type)}</span>
+              ${item.is_featured ? '<span class="badge-featured">★ Featured</span>' : ''}
+              ${hasSubs ? `<span class="badge-subs">${subsCount} sub-item${subsCount > 1 ? 's' : ''}</span>` : ''}
+            </div>
+
+            <p class="item-desc">${esc(item.description || 'Tidak ada deskripsi.')}</p>
+
             ${(item.tags || []).length > 0 ? `
-              <div class="flex gap-1.5 flex-wrap mt-1.5">
-                ${item.tags.map(t => `<span class="text-zinc-500 text-[9px] bg-zinc-950/30 px-1.5 py-0.5 rounded border border-zinc-800/50">${esc(t)}</span>`).join('')}
+              <div class="item-tags">
+                ${item.tags.map(t => `<span class="item-tag">${esc(t)}</span>`).join('')}
               </div>
             ` : ''}
           </div>
-        </div>
 
-        <!-- Right Section: Actions -->
-        <div class="flex items-center gap-2 flex-shrink-0 justify-end border-t border-zinc-800/50 pt-3 md:pt-0 md:border-t-0 w-full md:w-auto">
-          <button class="flex-1 md:flex-none bg-transparent hover:bg-zinc-800 border border-zinc-800 text-zinc-200 hover:text-zinc-50 text-xs py-2 px-4 rounded-md font-medium transition-colors edit-btn" data-id="${esc(item.id)}">Edit</button>
-          <button class="flex-grow-0 px-3 bg-transparent hover:bg-red-950/20 border border-zinc-800 hover:border-red-900/30 text-zinc-400 hover:text-red-400 text-xs py-2 rounded-md font-medium transition-colors delete-btn" data-id="${esc(item.id)}">Hapus</button>
+          <!-- Actions -->
+          <div class="item-actions">
+            <button class="act-edit edit-btn" data-id="${esc(item.id)}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:4px"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>Edit
+            </button>
+            <button class="act-delete delete-btn" data-id="${esc(item.id)}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-1px;margin-right:3px"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>Hapus
+            </button>
+          </div>
         </div>
       </div>
     `;
