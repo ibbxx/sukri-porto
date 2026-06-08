@@ -228,4 +228,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (yearEl) {
     yearEl.textContent = new Date().getFullYear();
   }
+
+  // Mobile Nav Auto Hide on Scroll
+  const navMenu = document.querySelector('.nav-menu');
+  if (navMenu) {
+    let lastScrollY = window.scrollY;
+    
+    window.addEventListener('scroll', () => {
+      if (window.innerWidth <= 768) {
+        if (window.scrollY > 50 && window.scrollY > lastScrollY) {
+          navMenu.classList.add('hide-on-mobile');
+        } else {
+          navMenu.classList.remove('hide-on-mobile');
+        }
+      } else {
+        navMenu.classList.remove('hide-on-mobile');
+      }
+      lastScrollY = window.scrollY;
+    }, { passive: true });
+  }
 });
