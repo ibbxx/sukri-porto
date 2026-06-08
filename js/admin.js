@@ -346,6 +346,40 @@ document.getElementById('searchItems')?.addEventListener('input', (e) => {
 });
 
 /* =========================
+   UI TOGGLE (LIST / GRID)
+========================= */
+const toggleViewBtn = document.getElementById('toggleViewBtn');
+const viewIconList = document.getElementById('viewIconList');
+const viewIconGrid = document.getElementById('viewIconGrid');
+// itemsGrid already selected above inside renderItems, but we need it globally or query it.
+// itemsGrid is queried in renderItems but not globally, let's just query it.
+
+let isGridView = localStorage.getItem('adminGridView') === 'true';
+
+function updateViewUI() {
+  const grid = document.getElementById('itemsGrid');
+  if (!grid) return;
+  if (isGridView) {
+    grid.classList.add('grid-view');
+    if (viewIconList) viewIconList.classList.remove('hidden');
+    if (viewIconGrid) viewIconGrid.classList.add('hidden');
+  } else {
+    grid.classList.remove('grid-view');
+    if (viewIconList) viewIconList.classList.add('hidden');
+    if (viewIconGrid) viewIconGrid.classList.remove('hidden');
+  }
+}
+
+toggleViewBtn?.addEventListener('click', () => {
+  isGridView = !isGridView;
+  localStorage.setItem('adminGridView', isGridView);
+  updateViewUI();
+});
+
+// Initialize View Mode UI
+updateViewUI();
+
+/* =========================
    ADD / EDIT MODAL
 ========================= */
 const itemModal = document.getElementById('itemModal');
