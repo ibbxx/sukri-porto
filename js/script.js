@@ -246,5 +246,25 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       lastScrollY = window.scrollY;
     }, { passive: true });
+
+    // Sembunyikan menu navigasi mobile saat link diklik
+    const navLinks = navMenu.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          navMenu.classList.add('hide-on-mobile');
+        }
+      });
+    });
+
+    // Sembunyikan menu navigasi mobile saat klik di luar area navbar
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768) {
+        const navbar = document.querySelector('.navbar');
+        if (navbar && !navbar.contains(e.target)) {
+          navMenu.classList.add('hide-on-mobile');
+        }
+      }
+    });
   }
 });
