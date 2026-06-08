@@ -92,7 +92,13 @@ function buildPortfolioData(items, subs) {
 
   portfolioData = (items || []).map(row => {
     const sourceUrl = safeUrl(row.source_url);
-    const embedUrl = safeUrl(row.embed_url);
+    let embedUrl = safeUrl(row.embed_url);
+    if (!embedUrl && row.type === 'youtube') {
+      const ytId = getYoutubeId(sourceUrl);
+      if (ytId) {
+        embedUrl = `https://www.youtube.com/embed/${ytId}`;
+      }
+    }
     let thumb = safeUrl(row.thumbnail_url);
     if (!thumb && row.type === 'youtube') {
       const ytId = getYoutubeId(sourceUrl || embedUrl);
@@ -102,7 +108,7 @@ function buildPortfolioData(items, subs) {
     }
     if (
       (!thumb || String(thumb).includes('via.placeholder.com')) &&
-      sourceUrl.includes('instagram.com/p/')
+      /instagram\.com\/(?:p|reel|tv)\//i.test(sourceUrl)
     ) {
       thumb = guessIgThumb(sourceUrl);
     }
@@ -201,7 +207,7 @@ function getYoutubeId(url) {
 }
 
 function getIgShortcode(url) {
-  const m = String(url || "").match(/instagram\.com\/p\/([^\/\?\#]+)/i);
+  const m = String(url || "").match(/instagram\.com\/(?:p|reel|tv)\/([^\/\?\#]+)/i);
   return m ? m[1] : "";
 }
 function guessIgThumb(url) {
@@ -230,7 +236,7 @@ function getFeaturedItems() {
       const isIG =
         String(cloned.category || "").includes("(IG)") &&
         cloned.sourceUrl &&
-        String(cloned.sourceUrl).includes("instagram.com/p/");
+        /instagram\.com\/(?:p|reel|tv)\//i.test(String(cloned.sourceUrl));
       const looksPlaceholder =
         !cloned.thumbnailUrl || String(cloned.thumbnailUrl).includes("via.placeholder.com");
       if (isIG && looksPlaceholder && !FEATURED_THUMBS[cloned.id]) {
@@ -336,10 +342,6 @@ function renderFilters() {
         <button class="filter-btn ${cat === activeCategory ? "is-active" : ""}" data-cat="${escapeAttr(cat)}">
           ${escapeHtml(cat || "Semua")}
         </button>
-        ${cat ? `
-          <button class="category-open-btn" data-open-cat="${escapeAttr(cat)}"
-            aria-label="Buka slider ${escapeAttr(cat)}" title="Buka slider kategori">↗</button>
-        ` : ""}
       </div>
     `
     )
@@ -501,7 +503,15 @@ function openModal(item) {
       setTimeout(processIg, 350);
     }, 50);
   }
-  /* 4) Fallback */
+  /* 4) Image Fallback (If custom thumbnail exists) */
+  else if (item.thumbnailUrl) {
+    modalBody.innerHTML = `
+      <div class="modal-image-wrap" style="display:flex; justify-content:center; align-items:center; height:100%; min-height:65vh; overflow:hidden;">
+        <img src="${escapeAttr(item.thumbnailUrl)}" alt="${escapeAttr(item.title)}" style="max-width:100%; max-height:100%; object-fit:contain; border-radius:8px;" />
+      </div>
+    `;
+  }
+  /* 5) Fallback */
   else {
     modalBody.innerHTML = `
       <div class="modal-placeholder">
@@ -582,10 +592,18 @@ function buildSlideMedia(item) {
     String(item.sourceUrl).includes("instagram.com/p/")
   ) {
     return `
-      <div class="slide-media" style="height:auto; padding:14px;">
+      <div class="slide-media" style="display:flex; justify-content:center; align-items:center; background:#fff; overflow:auto; padding:14px;">
         <blockquote class="instagram-media"
           data-instgrm-permalink="${escapeAttr(item.sourceUrl)}"
           data-instgrm-version="14"></blockquote>
+      </div>
+    `;
+  }
+
+  if (item.thumbnailUrl) {
+    return `
+      <div class="slide-media" style="display:flex; justify-content:center; align-items:center; background:rgba(0,0,0,0.2); overflow:hidden;">
+        <img src="${escapeAttr(item.thumbnailUrl)}" alt="${escapeAttr(item.title)}" style="max-width:100%; max-height:100%; object-fit:contain;" />
       </div>
     `;
   }
@@ -1098,11 +1116,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* EVENTS: filters, search, grid click */
   if (filtersWrap) {
     filtersWrap.addEventListener("click", (e) => {
-      const openBtn = e.target.closest(".category-open-btn");
-      if (openBtn) {
-        openCategoryModal(openBtn.dataset.openCat || "");
-        return;
-      }
       const btn = e.target.closest(".filter-btn");
       if (!btn) return;
       const nextCategory = btn.dataset.cat || "";
