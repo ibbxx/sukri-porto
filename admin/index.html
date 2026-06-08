@@ -489,56 +489,34 @@
             <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">1</div>
             <h3 class="text-base font-bold text-zinc-100">Menambah Item Portfolio Baru</h3>
           </div>
-          <p class="text-sm text-zinc-400 mb-4 leading-relaxed">Fasilitas ini digunakan untuk memasukkan karya terbaru Anda ke dalam sistem agar dapat dilihat oleh pengunjung website.</p>
-          <ul class="space-y-3 text-sm text-zinc-400 list-none ml-2">
-            <li class="flex items-start gap-2">
-              <span class="text-emerald-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Langkah Awal:</strong> Pastikan Anda berada di tab <span class="bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded text-xs">Portfolio</span>, lalu klik tombol <strong class="text-zinc-200">"Tambah Item"</strong> di sudut kanan atas.
-              </div>
+          <ol class="space-y-4 text-sm text-zinc-400 list-decimal list-inside ml-2">
+            <li>
+              <strong class="text-zinc-200">Buka Form:</strong> Di tab Portfolio, klik tombol <strong class="text-zinc-200">"Tambah Item"</strong>.
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-emerald-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Judul &amp; Kategori:</strong> Isi judul karya dengan jelas. Pilih kategori dari dropdown yang tersedia. Jika kategori belum ada, Anda bisa memilih <em class="text-zinc-300">"Buat Kategori Baru..."</em> lalu ketikkan nama kategori di kolom yang muncul.
-              </div>
+            <li>
+              <strong class="text-zinc-200">Isi Judul &amp; Kategori:</strong> Ketik judul karya. Pilih kategori yang ada atau ketik kategori baru di kolom yang muncul.
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-emerald-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Pemilihan Tipe Konten:</strong>
-                <ul class="mt-2 space-y-2 list-disc list-inside ml-2">
-                  <li><strong class="text-zinc-300">YouTube:</strong> Pilih ini jika URL karya berasal dari YouTube. Sistem akan secara otomatis mengonversinya menjadi pemutar video (embed) di website.</li>
-                  <li><strong class="text-zinc-300">Link (IG/Other):</strong> Pilih ini untuk tautan publikasi luar seperti Instagram Reels, TikTok, atau artikel eksternal.</li>
-                  <li><strong class="text-zinc-300">Google Drive Folder:</strong> Khusus untuk karya yang berisi kumpulan file (seperti galeri foto atau dokumen) yang disimpan di Drive.</li>
-                </ul>
-              </div>
+            <li>
+              <strong class="text-zinc-200">Pilih Tipe Konten:</strong> 
+              <span class="block mt-2 pl-5 space-y-1">
+                <span class="block">• <strong class="text-zinc-300">YouTube:</strong> Untuk video (otomatis jadi embed).</span>
+                <span class="block">• <strong class="text-zinc-300">Link:</strong> Untuk URL Instagram/TikTok/Web.</span>
+                <span class="block">• <strong class="text-zinc-300">Drive Folder:</strong> Untuk galeri dari Google Drive.</span>
+              </span>
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-emerald-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Menambahkan URL:</strong> Cukup salin dan tempel (copy-paste) tautan asli ke kolom URL. Sistem dirancang untuk mendeteksi ID video atau struktur link secara otomatis tanpa perlu modifikasi manual dari Anda.
-              </div>
+            <li>
+              <strong class="text-zinc-200">Masukkan URL:</strong> Copy dan paste link asli karya Anda.
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-emerald-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Deskripsi &amp; Tags:</strong> Tambahkan deskripsi singkat mengenai konteks karya. Untuk Tags, pisahkan setiap kata kunci dengan koma (contoh: <em class="text-zinc-300">Desain, UI/UX, 2024</em>).
-              </div>
+            <li>
+              <strong class="text-zinc-200">Lengkapi Detail:</strong> Tambahkan deskripsi singkat dan masukkan tags (pisahkan dengan koma).
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-emerald-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Upload Thumbnail:</strong> Klik "Pilih Gambar" untuk mengunggah cover karya. Disarankan menggunakan rasio standar (seperti 16:9 atau 4:3) dengan ukuran maksimal <strong class="text-red-400">1 MB</strong> (berformat JPG, PNG, atau WebP).
-              </div>
+            <li>
+              <strong class="text-zinc-200">Upload Thumbnail:</strong> Pilih gambar cover (Maksimal 1 MB).
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-emerald-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Opsi Featured:</strong> Centang kotak di bagian bawah form jika Anda ingin karya ini dipamerkan secara khusus pada area "Featured" (marquee carousel) di halaman depan website.
-              </div>
+            <li>
+              <strong class="text-zinc-200">Simpan:</strong> Klik tombol <strong class="text-zinc-200">Simpan</strong>. Centang <em>"Tampilkan di bagian Featured"</em> jika ingin dimunculkan di korsel (marquee) atas.
             </li>
-          </ul>
+          </ol>
         </div>
 
         <!-- Section 2 -->
@@ -547,33 +525,23 @@
             <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 font-bold">2</div>
             <h3 class="text-base font-bold text-zinc-100">Mengedit, Mengurutkan, dan Menghapus Item</h3>
           </div>
-          <p class="text-sm text-zinc-400 mb-4 leading-relaxed">Manajemen konten rutin dapat dilakukan secara langsung melalui daftar item yang ada di beranda admin.</p>
-          <ul class="space-y-3 text-sm text-zinc-400 list-none ml-2">
-            <li class="flex items-start gap-2">
-              <span class="text-blue-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Pencarian &amp; Filter Cepat:</strong> Jika item sudah terlalu banyak, gunakan kotak <strong class="text-zinc-200">Pencarian</strong> untuk mencari nama spesifik, atau gunakan menu dropdown <strong class="text-zinc-200">Filter Kategori</strong> untuk menampilkan kelompok karya tertentu.
-              </div>
+          <ol class="space-y-4 text-sm text-zinc-400 list-decimal list-inside ml-2">
+            <li>
+              <strong class="text-zinc-200">Cari Item:</strong> Gunakan kolom <strong class="text-zinc-200">Pencarian</strong> atau dropdown <strong class="text-zinc-200">Filter</strong> untuk menemukan karya.
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-blue-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Mengubah Data (Edit):</strong> Temukan karya yang ingin diperbarui, lalu klik tombol <strong class="text-zinc-200">Edit</strong>. Modal form akan terbuka kembali membawa seluruh data lama. Anda bebas mengubah judul, kategori, tautan, hingga menghapus dan menukar thumbnail lama dengan gambar yang baru. Jangan lupa tekan tombol <strong class="text-zinc-200">Simpan</strong> setelah selesai.
-              </div>
+            <li>
+              <strong class="text-zinc-200">Edit Data:</strong> Klik tombol <strong class="text-zinc-200">Edit</strong> pada kartu item. Anda dapat mengubah semua data termasuk thumbnail.
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-blue-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Mengatur Urutan (Sort Order):</strong> Terdapat kolom "Urutan" berupa angka pada form edit. Sistem menampilkan item berdasarkan urutan angka terbesar ke terkecil (descending). Gunakan kolom ini untuk memprioritaskan karya yang lebih krusial di atas karya lain.
-              </div>
+            <li>
+              <strong class="text-zinc-200">Atur Urutan (Opsional):</strong> Ubah angka pada kolom "Urutan". Angka yang lebih besar akan tampil lebih awal/di atas.
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-blue-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200 text-red-400">Menghapus Item Secara Permanen:</strong> Klik tombol <strong class="text-zinc-200 text-red-400">Hapus</strong>. Sebuah pop-up peringatan akan muncul. Pastikan kembali Anda benar-benar ingin menghilangkan data ini, karena aksi penghapusan bersifat <strong class="text-red-400">permanen dan tidak dapat dibatalkan (undo)</strong>.
-              </div>
+            <li>
+              <strong class="text-zinc-200">Simpan Perubahan:</strong> Klik <strong class="text-zinc-200">Simpan</strong> untuk menerapkan hasil edit.
             </li>
-          </ul>
+            <li>
+              <strong class="text-zinc-200">Hapus Item:</strong> Klik tombol <strong class="text-zinc-200 text-red-400">Hapus</strong> dan konfirmasi pada pop-up jika ingin menghapus karya secara permanen.
+            </li>
+          </ol>
         </div>
 
         <!-- Section 3 -->
@@ -582,43 +550,24 @@
             <div class="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 font-bold">3</div>
             <h3 class="text-base font-bold text-zinc-100">Manajemen Foto Profil (Hero &amp; About)</h3>
           </div>
-          <p class="text-sm text-zinc-400 mb-4 leading-relaxed">Website portfolio Anda menggunakan dua jenis foto profil yang tampil pada lokasi yang berbeda.</p>
-          <ul class="space-y-3 text-sm text-zinc-400 list-none ml-2">
-            <li class="flex items-start gap-2">
-              <span class="text-pink-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Navigasi ke Menu:</strong> Klik tab <strong class="text-zinc-200">Foto Profil</strong> pada baris navigasi paling atas.
-              </div>
+          <ol class="space-y-4 text-sm text-zinc-400 list-decimal list-inside ml-2">
+            <li>
+              <strong class="text-zinc-200">Buka Pengaturan:</strong> Klik tab <strong class="text-zinc-200">Foto Profil</strong> di navigasi atas.
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-pink-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Perbedaan Hero dan About:</strong> 
-                <ul class="mt-2 space-y-2 list-disc list-inside ml-2">
-                  <li><strong class="text-zinc-300">Foto Profil — Hero:</strong> Adalah pas foto berbentuk bundar yang pertama kali dilihat oleh pengunjung (di bagian paling atas/awal halaman). Disarankan memakai foto berwajah proporsional dengan rasio 1:1.</li>
-                  <li><strong class="text-zinc-300">Foto Profil — About:</strong> Adalah foto yang lebih leluasa (potrait/landscape) yang ditempatkan pada section "Tentang Saya" (biasanya di bagian bawah).</li>
-                </ul>
-              </div>
+            <li>
+              <strong class="text-zinc-200">Pilih Tipe Foto:</strong> 
+              <span class="block mt-2 pl-5 space-y-1">
+                <span class="block">• <strong class="text-zinc-300">Hero:</strong> Foto bundar di halaman atas (disarankan rasio 1:1).</span>
+                <span class="block">• <strong class="text-zinc-300">About:</strong> Foto besar di bagian "Tentang Saya" (bisa portrait/landscape).</span>
+              </span>
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-pink-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Cara Mengunggah:</strong> Anda dapat menggeser file gambar ke area garis putus-putus (drag-and-drop), atau klik teks <strong class="text-zinc-200">"Pilih file"</strong> untuk menelusuri dari folder perangkat. Format yang didukung adalah JPG, PNG, WebP, dan GIF.
-              </div>
+            <li>
+              <strong class="text-zinc-200">Pilih File:</strong> Drag-and-drop atau klik <strong class="text-zinc-200">"Pilih file"</strong> (Maksimal 1 MB, disarankan compress/perkecil ukuran dulu).
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-pink-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Ketentuan File:</strong> Demi menjaga kecepatan pemuatan halaman (loading) website, ukuran maksimal untuk satu file dibatasi hingga <strong class="text-red-400">1 MB</strong>. Sangat disarankan untuk mengompresi foto terlebih dahulu sebelum diunggah.
-              </div>
+            <li>
+              <strong class="text-zinc-200">Upload:</strong> Klik <strong class="text-zinc-200">"Upload &amp; Simpan"</strong> dan tunggu notifikasi sukses hijau muncul.
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-pink-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Menyimpan Perubahan:</strong> Setelah pratinjau gambar baru muncul, tombol <strong class="text-zinc-200">"Upload &amp; Simpan"</strong> akan aktif. Klik tombol tersebut dan tunggu proses pengunggahan ke server selesai hingga muncul notifikasi sukses berwarna hijau.
-              </div>
-            </li>
-          </ul>
+          </ol>
         </div>
 
         <!-- Section 4 -->
@@ -627,18 +576,12 @@
             <div class="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 font-bold">4</div>
             <h3 class="text-base font-bold text-zinc-100">Tips Tambahan</h3>
           </div>
-          <ul class="space-y-3 text-sm text-zinc-400 list-none ml-2">
-            <li class="flex items-start gap-2">
-              <span class="text-orange-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Ganti Tampilan Daftar:</strong> Jika dirasa terlalu padat, Anda bisa mengganti tampilan daftar item portfolio antara mode baris (List View) atau mode kotak-kotak (Grid View). Klik ikon tata letak yang berada tepat di sebelah kotak pencarian.
-              </div>
+          <ul class="space-y-4 text-sm text-zinc-400 list-disc list-inside ml-2">
+            <li>
+              <strong class="text-zinc-200">Ganti Tampilan:</strong> Klik ikon tata letak di sebelah kotak pencarian untuk beralih antara List View (baris) dan Grid View (kotak-kotak).
             </li>
-            <li class="flex items-start gap-2">
-              <span class="text-orange-500 mt-1">•</span>
-              <div>
-                <strong class="text-zinc-200">Masalah Cache Browser:</strong> Apabila Anda sudah memperbarui data atau mengganti foto profil tapi belum tampak berubah di halaman pengunjung (publik), cobalah untuk melakukan <em class="text-zinc-300">Hard Refresh</em> pada browser pengunjung. Tekan kombinasi tombol <code>Ctrl + F5</code> (Windows) atau <code>Cmd + Shift + R</code> (Mac).
-              </div>
+            <li>
+              <strong class="text-zinc-200">Atasi Data Tidak Berubah (Cache):</strong> Jika foto/data baru belum terlihat di website pengunjung, tekan <code>Ctrl + F5</code> (Windows) atau <code>Cmd + Shift + R</code> (Mac) untuk refresh paksa browser.
             </li>
           </ul>
         </div>
