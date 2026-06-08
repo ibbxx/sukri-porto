@@ -21,6 +21,7 @@
 let portfolioData = [];
 let FEATURED_IDS = [];
 let FEATURED_THUMBS = {};
+let openModalCount = 0;
 
 /* =========================================================
    SUPABASE DATA FETCH + CACHE
@@ -31,6 +32,7 @@ const CACHE_KEY_SITE = 'site_content_cache';
 
 async function loadPortfolioData() {
   try {
+    if (!supabaseClient) throw new Error('Supabase SDK tidak termuat atau tidak terinisialisasi.');
     // Fetch portfolio items
     const { data: items, error: itemsErr } = await supabaseClient
       .from('portfolio_items')
@@ -89,12 +91,20 @@ function buildPortfolioData(items, subs) {
   });
 
   portfolioData = (items || []).map(row => {
-    let thumb = row.thumbnail_url || '';
+    const sourceUrl = safeUrl(row.source_url);
+    const embedUrl = safeUrl(row.embed_url);
+    let thumb = safeUrl(row.thumbnail_url);
     if (!thumb && row.type === 'youtube') {
-      const ytId = getYoutubeId(row.source_url || row.embed_url);
+      const ytId = getYoutubeId(sourceUrl || embedUrl);
       if (ytId) {
         thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
       }
+    }
+    if (
+      (!thumb || String(thumb).includes('via.placeholder.com')) &&
+      sourceUrl.includes('instagram.com/p/')
+    ) {
+      thumb = guessIgThumb(sourceUrl);
     }
 
     const item = {
@@ -102,8 +112,8 @@ function buildPortfolioData(items, subs) {
       title: row.title,
       category: row.category,
       type: row.type,
-      sourceUrl: row.source_url || '',
-      embedUrl: row.embed_url || '',
+      sourceUrl,
+      embedUrl,
       thumbnailUrl: thumb,
       description: row.description || '',
       tags: row.tags || [],
@@ -114,9 +124,9 @@ function buildPortfolioData(items, subs) {
       item.items = subsMap[row.id].map(sub => ({
         title: sub.title,
         type: sub.type || 'drive_video',
-        sourceUrl: sub.source_url || '',
-        embedUrl: sub.embed_url || '',
-        folderUrl: sub.folder_url || '',
+        sourceUrl: safeUrl(sub.source_url),
+        embedUrl: safeUrl(sub.embed_url),
+        folderUrl: safeUrl(sub.folder_url),
       }));
     }
 
@@ -130,7 +140,7 @@ function buildPortfolioData(items, subs) {
     if (row.is_featured) {
       FEATURED_IDS.push(row.id);
       if (row.featured_thumb) {
-        FEATURED_THUMBS[row.id] = row.featured_thumb;
+        FEATURED_THUMBS[row.id] = safeUrl(row.featured_thumb);
       }
     }
   });
@@ -144,11 +154,13 @@ function applySiteContent(rows) {
   // Update profile photos
   if (map.profile_photo_hero) {
     const el = document.getElementById('profileHero');
-    if (el) el.src = map.profile_photo_hero;
+    const url = safeUrl(map.profile_photo_hero);
+    if (el && url) el.src = url;
   }
   if (map.profile_photo_about) {
     const el = document.getElementById('profileAbout');
-    if (el) el.src = map.profile_photo_about;
+    const url = safeUrl(map.profile_photo_about);
+    if (el && url) el.src = url;
   }
 }
 
@@ -167,12 +179,23 @@ function escapeHtml(str) {
   );
 }
 function escapeAttr(str) {
-  return escapeHtml(str).replace(/"/g, "&quot;");
+  return escapeHtml(str);
+}
+
+function safeUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  try {
+    const parsed = new URL(raw, window.location.href);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : '';
+  } catch {
+    return '';
+  }
 }
 
 function getYoutubeId(url) {
   if (!url) return "";
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : "";
 }
@@ -222,11 +245,11 @@ function getFeaturedItems() {
 /* =========================================================
    UI CONFIG (thumbnail per kategori)
 ========================================================= */
-const UI = {
-  thumbCategories: new Set(["Long Video (YouTube)"]), // yang boleh tampil thumbnail mini di grid
-};
 function shouldShowThumb(item) {
-  return UI.thumbCategories.has(item.category) && !!item.thumbnailUrl;
+  if (!item.thumbnailUrl) return false;
+  // Jangan tampilkan placeholder
+  if (String(item.thumbnailUrl).includes('via.placeholder.com')) return false;
+  return true;
 }
 
 /* =========================================================
@@ -238,9 +261,8 @@ function attachTiltTo(selector) {
     if (card.dataset.tiltBound === "1") return;
     card.dataset.tiltBound = "1";
 
-    let rect;
     const onMove = (e) => {
-      rect = rect || card.getBoundingClientRect();
+      const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
@@ -251,7 +273,6 @@ function attachTiltTo(selector) {
     };
 
     const onLeave = () => {
-      rect = null;
       card.style.transform =
         "perspective(900px) rotateX(0deg) rotateY(0deg) translateY(0px)";
     };
@@ -297,7 +318,7 @@ let activeCategory = "";
 
 function rebuildCategories() {
   categories = Array.from(new Set(portfolioData.map((x) => x.category)));
-  activeCategory = categories[0] || "";
+  activeCategory = "";
 }
 
 function renderFilters() {
@@ -308,12 +329,18 @@ function renderFilters() {
     return;
   }
 
-  filtersWrap.innerHTML = categories
+  filtersWrap.innerHTML = ["", ...categories]
     .map(
       (cat) => `
-      <button class="filter-btn ${cat === activeCategory ? "is-active" : ""}" data-cat="${escapeAttr(cat)}">
-        ${escapeHtml(cat)}
-      </button>
+      <div class="filter-control">
+        <button class="filter-btn ${cat === activeCategory ? "is-active" : ""}" data-cat="${escapeAttr(cat)}">
+          ${escapeHtml(cat || "Semua")}
+        </button>
+        ${cat ? `
+          <button class="category-open-btn" data-open-cat="${escapeAttr(cat)}"
+            aria-label="Buka slider ${escapeAttr(cat)}" title="Buka slider kategori">↗</button>
+        ` : ""}
+      </div>
     `
     )
     .join("");
@@ -344,8 +371,8 @@ function renderGrid() {
   if (!grid) return;
 
   const items = portfolioData.filter((item) => {
-    const catOk = !activeCategory ? true : item.category === activeCategory;
     const q = searchQuery.trim().toLowerCase();
+    const catOk = !activeCategory ? true : item.category === activeCategory;
     const qOk =
       !q ||
       (
@@ -363,7 +390,9 @@ function renderGrid() {
   grid.innerHTML = items
     .map(
       (item) => `
-      <article class="work-item glass tilt ${shouldShowThumb(item) ? "" : "no-thumb"}" data-id="${escapeAttr(item.id)}">
+      <article class="work-item glass tilt ${shouldShowThumb(item) ? "" : "no-thumb"}"
+        data-id="${escapeAttr(item.id)}" role="button" tabindex="0"
+        aria-label="Buka ${escapeAttr(item.title)}">
         ${renderThumb(item)}
         <div class="work-meta">
           <h3>${escapeHtml(item.title)}</h3>
@@ -371,7 +400,7 @@ function renderGrid() {
           <div class="work-tags">
             <span class="tag">${escapeHtml(item.category)}</span>
             ${(item.tags || [])
-              .slice(0, 2)
+              .slice(0, 3)
               .map((t) => `<span class="tag">${escapeHtml(t)}</span>`)
               .join("")}
           </div>
@@ -400,7 +429,22 @@ function openModal(item) {
 
   if (modalTitle) modalTitle.textContent = item.title || "";
   if (modalCategory) modalCategory.textContent = item.category || "";
-  if (modalOpenLink) modalOpenLink.href = item.sourceUrl || "#";
+  if (modalOpenLink) modalOpenLink.href = item.sourceUrl || item.embedUrl || "#";
+
+  // Render tags di modal head
+  const modalHead = modal.querySelector('.modal-head');
+  const existingTags = modalHead?.querySelector('.modal-tags');
+  if (existingTags) existingTags.remove();
+  if (item.tags && item.tags.length) {
+    const tagsHtml = document.createElement('div');
+    tagsHtml.className = 'modal-tags';
+    tagsHtml.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;';
+    tagsHtml.innerHTML = item.tags
+      .map(t => `<span class="tag">${escapeHtml(t)}</span>`)
+      .join('');
+    const headLeft = modalHead?.querySelector('div');
+    if (headLeft) headLeft.appendChild(tagsHtml);
+  }
 
   modalBody.innerHTML = "";
   modalBody.style.maxHeight = "";
@@ -416,6 +460,7 @@ function openModal(item) {
     modalBody.innerHTML = `
       <iframe
         src="${escapeAttr(item.embedUrl)}"
+        loading="lazy"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowfullscreen></iframe>
     `;
@@ -423,7 +468,7 @@ function openModal(item) {
   /* 2) Drive */
   else if ((item.type === "drive_video" || item.type === "drive_image") && item.embedUrl) {
     modalBody.innerHTML = `
-      <iframe src="${escapeAttr(item.embedUrl)}" allow="autoplay" allowfullscreen></iframe>
+      <iframe src="${escapeAttr(item.embedUrl)}" loading="lazy" allow="autoplay" allowfullscreen></iframe>
     `;
   }
   /* 3) Instagram (link/embed) */
@@ -465,15 +510,20 @@ function openModal(item) {
     `;
   }
 
+  if (!modal.classList.contains("is-open")) openModalCount++;
   modal.classList.add("is-open");
   modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
 }
 
 function closeModal() {
-  if (!modal) return;
+  if (!modal || !modal.classList.contains("is-open")) return;
   modal.classList.remove("is-open");
   modal.setAttribute("aria-hidden", "true");
+
+  // Hapus tags di modal head
+  const existingTags = modal.querySelector('.modal-tags');
+  if (existingTags) existingTags.remove();
 
   if (modalBody) {
     modal.classList.remove("modal--ig");
@@ -483,7 +533,8 @@ function closeModal() {
     modalBody.style.webkitOverflowScrolling = "";
     modalBody.innerHTML = "";
   }
-  document.body.style.overflow = "";
+  openModalCount = Math.max(0, openModalCount - 1);
+  if (openModalCount === 0) document.body.style.overflow = "";
 }
 
 /* =========================================================
@@ -502,13 +553,27 @@ const catOpenLink = document.getElementById("catOpenLink");
 
 let catItems = [];
 let activeIndex = 0;
+let catMediaBuilder = buildSlideMedia;
+
+function processInstagramEmbeds() {
+  if (window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process();
+}
+
+function ensureSlideMedia(index) {
+  if (!catTrack || !catItems[index]) return;
+  const slot = catTrack.querySelector(`.slide[data-idx="${index}"] .slide-media-slot`);
+  if (!slot || slot.dataset.hydrated === "1") return;
+  slot.innerHTML = catMediaBuilder(catItems[index]);
+  slot.dataset.hydrated = "1";
+  processInstagramEmbeds();
+}
 
 function buildSlideMedia(item) {
   if (item.type === "youtube" && item.embedUrl) {
-    return `<iframe class="slide-media" src="${escapeAttr(item.embedUrl)}" allowfullscreen></iframe>`;
+    return `<iframe class="slide-media" src="${escapeAttr(item.embedUrl)}" loading="lazy" allowfullscreen></iframe>`;
   }
   if ((item.type === "drive_video" || item.type === "drive_image") && item.embedUrl) {
-    return `<iframe class="slide-media" src="${escapeAttr(item.embedUrl)}" allow="autoplay" allowfullscreen></iframe>`;
+    return `<iframe class="slide-media" src="${escapeAttr(item.embedUrl)}" loading="lazy" allow="autoplay" allowfullscreen></iframe>`;
   }
 
   if (
@@ -541,7 +606,8 @@ function updateCatUI() {
   const total = catItems.length || 1;
   if (catCounter) catCounter.textContent = `${activeIndex + 1} / ${total}`;
   const current = catItems[activeIndex];
-  if (catOpenLink) catOpenLink.href = current?.folderUrl || current?.sourceUrl || "#";
+  if (catOpenLink) catOpenLink.href = current?.folderUrl || current?.sourceUrl || current?.embedUrl || "#";
+  ensureSlideMedia(activeIndex);
 }
 
 function snapTo(index, smooth = true) {
@@ -559,6 +625,8 @@ function openCategoryModal(category) {
   if (!catModal || !catTrack) return;
 
   catItems = portfolioData.filter((x) => x.category === category);
+  if (!catItems.length) return;
+  catMediaBuilder = buildSlideMedia;
   activeIndex = 0;
 
   if (catTitleBadge) catTitleBadge.textContent = "Category";
@@ -566,38 +634,44 @@ function openCategoryModal(category) {
 
   catTrack.innerHTML = catItems
     .map((item, idx) => {
-      const mediaHtml = buildSlideMedia(item);
       return `
         <div class="slide" data-idx="${idx}">
-          ${mediaHtml}
+          <div class="slide-media-slot" data-hydrated="${idx === 0 ? "1" : "0"}">
+            ${idx === 0 ? buildSlideMedia(item) : '<div class="slide-media slide-media--placeholder">Geser untuk memuat preview</div>'}
+          </div>
           <div class="slide-meta">
             <div>
               <div class="slide-title">${escapeHtml(item.title)}</div>
               <div class="slide-desc">${escapeHtml(item.description || "")}</div>
             </div>
-            <div class="tag">${escapeHtml(item.category)}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;">
+              <div class="slide-cat-badge tag">${escapeHtml(item.category)}</div>
+              ${(item.tags || []).slice(0, 3).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
+            </div>
           </div>
         </div>
       `;
     })
     .join("");
 
+  if (!catModal.classList.contains("is-open")) openModalCount++;
   catModal.classList.add("is-open");
   catModal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
 
-  if (window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process();
+  processInstagramEmbeds();
 
   updateCatUI();
   snapTo(activeIndex, false);
 }
 
 function closeCategoryModal() {
-  if (!catModal) return;
+  if (!catModal || !catModal.classList.contains("is-open")) return;
   catModal.classList.remove("is-open");
   catModal.setAttribute("aria-hidden", "true");
   if (catTrack) catTrack.innerHTML = "";
-  document.body.style.overflow = "";
+  openModalCount = Math.max(0, openModalCount - 1);
+  if (openModalCount === 0) document.body.style.overflow = "";
 }
 
 function buildFolderSlideMedia(it) {
@@ -623,7 +697,7 @@ function buildFolderSlideMedia(it) {
   }
 
   if ((it.type === "drive_video" || it.type === "drive_image") && it.embedUrl) {
-    return `<iframe class="slide-media" src="${escapeAttr(it.embedUrl)}" allow="autoplay" allowfullscreen></iframe>`;
+    return `<iframe class="slide-media" src="${escapeAttr(it.embedUrl)}" loading="lazy" allow="autoplay" allowfullscreen></iframe>`;
   }
 
   const link = it.sourceUrl || it.folderUrl || "#";
@@ -666,6 +740,7 @@ function openProjectFolderModal(folder) {
     description: folder.description,
     tags: folder.tags,
   }));
+  catMediaBuilder = buildFolderSlideMedia;
 
   activeIndex = 0;
 
@@ -676,19 +751,25 @@ function openProjectFolderModal(folder) {
     .map(
       (it, idx) => `
         <div class="slide" data-idx="${idx}">
-          ${buildFolderSlideMedia(it)}
+          <div class="slide-media-slot" data-hydrated="${idx === 0 ? "1" : "0"}">
+            ${idx === 0 ? buildFolderSlideMedia(it) : '<div class="slide-media slide-media--placeholder">Geser untuk memuat preview</div>'}
+          </div>
           <div class="slide-meta">
             <div>
               <div class="slide-title">${escapeHtml(it.title)}</div>
               <div class="slide-desc">${escapeHtml(it.description || "")}</div>
             </div>
-            <div class="tag">${escapeHtml(folder.category)}</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;">
+              <div class="slide-cat-badge tag">${escapeHtml(folder.category)}</div>
+              ${(folder.tags || []).slice(0, 3).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
+            </div>
           </div>
         </div>
       `
     )
     .join("");
 
+  if (!catModal.classList.contains("is-open")) openModalCount++;
   catModal.classList.add("is-open");
   catModal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
@@ -704,11 +785,15 @@ function buildFeaturedCard(item) {
   const thumb = (item.thumbnailUrl || "").trim();
 
   return `
-    <article class="featured-card tilt" data-id="${escapeAttr(item.id)}" role="button" tabindex="0">
+    <article class="featured-card tilt" data-id="${escapeAttr(item.id)}" role="button" tabindex="0"
+      aria-label="Buka ${escapeAttr(item.title)}">
       <div class="featured-badge">${escapeHtml(item.category || "Featured")}</div>
 
-      <div class="featured-media ${thumb ? "" : "is-empty"}"
-           style="${thumb ? `background-image:url('${escapeAttr(thumb)}')` : ""}">
+      <div class="featured-media ${thumb ? "" : "is-empty"}">
+        ${thumb ? `
+          <img src="${escapeAttr(thumb)}" alt="" loading="lazy"
+            onerror="this.onerror=null;this.remove();this.parentElement.classList.add('is-empty')" />
+        ` : ""}
       </div>
 
       <div class="featured-overlay">
@@ -757,15 +842,16 @@ function initFeatured() {
     });
 
     track.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter") return;
+      if (e.key !== "Enter" && e.key !== " ") return;
       const card = e.target.closest(".featured-card");
       if (!card) return;
+      e.preventDefault();
       openById(card.dataset.id);
     });
 
     // auto scroll
     // Auto slide (scrollLeft) kanan -> kiri
-    let paused = false;
+    let paused = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let last = performance.now();
 
     // ✅ Speed berbeda untuk mobile vs desktop
@@ -791,7 +877,9 @@ function initFeatured() {
         if (marquee.scrollLeft >= half) marquee.scrollLeft = 0;
       }
 
-      requestAnimationFrame(tick);
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        requestAnimationFrame(tick);
+      }
     };
 
 
@@ -800,7 +888,9 @@ function initFeatured() {
     marquee.addEventListener("touchstart", () => (paused = true), { passive: true });
     marquee.addEventListener("touchend", () => (paused = false), { passive: true });
 
-    requestAnimationFrame(tick);
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      requestAnimationFrame(tick);
+    }
     return;
   }
 
@@ -1008,39 +1098,54 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* EVENTS: filters, search, grid click */
   if (filtersWrap) {
     filtersWrap.addEventListener("click", (e) => {
+      const openBtn = e.target.closest(".category-open-btn");
+      if (openBtn) {
+        openCategoryModal(openBtn.dataset.openCat || "");
+        return;
+      }
       const btn = e.target.closest(".filter-btn");
       if (!btn) return;
-      activeCategory = btn.dataset.cat || "";
+      const nextCategory = btn.dataset.cat || "";
+      if (nextCategory && nextCategory === activeCategory) {
+        openCategoryModal(nextCategory);
+        return;
+      }
+      activeCategory = nextCategory;
       renderFilters();
       renderGrid();
-    });
-
-    // double click => open category modal
-    filtersWrap.addEventListener("dblclick", (e) => {
-      const btn = e.target.closest(".filter-btn");
-      if (!btn) return;
-      openCategoryModal(btn.dataset.cat);
     });
   }
 
   if (searchInput) {
+    let searchTimer;
     searchInput.addEventListener("input", (e) => {
       searchQuery = e.target.value || "";
-      renderGrid();
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => renderGrid(), 250);
     });
   }
 
   if (grid) {
-    grid.addEventListener("click", (e) => {
-      const card = e.target.closest(".work-item");
+    const openGridCard = (card) => {
       if (!card) return;
-
       const id = card.dataset.id;
       const item = portfolioData.find((x) => x.id === id);
       if (!item) return;
-
       if (item.type === "drive_folder") openProjectFolderModal(item);
       else openModal(item);
+    };
+
+    grid.addEventListener("click", (e) => {
+      const card = e.target.closest(".work-item");
+      openGridCard(card);
+    });
+
+    grid.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const card = e.target.closest(".work-item");
+      if (!card) return;
+      e.preventDefault();
+      openGridCard(card);
     });
   }
 
@@ -1079,13 +1184,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         const slides = Array.from(catTrack.querySelectorAll(".slide"));
         if (!slides.length) return;
 
-        const center = catTrack.scrollLeft + catTrack.clientWidth / 2;
+        // Gunakan getBoundingClientRect() untuk akurasi posisi relatif terhadap viewport
+        const trackRect = catTrack.getBoundingClientRect();
+        const trackCenter = trackRect.left + trackRect.width / 2;
         let best = 0;
         let bestDist = Infinity;
 
         slides.forEach((s) => {
-          const sCenter = s.offsetLeft + s.clientWidth / 2;
-          const dist = Math.abs(sCenter - center);
+          const rect = s.getBoundingClientRect();
+          const sCenter = rect.left + rect.width / 2;
+          const dist = Math.abs(sCenter - trackCenter);
           if (dist < bestDist) {
             bestDist = dist;
             best = Number(s.dataset.idx);
@@ -1104,11 +1212,19 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     catTrack.addEventListener("mousedown", (e) => {
       isDown = true;
+      catTrack.style.scrollBehavior = "auto"; // Hindari lag saat menggeser
       startX = e.pageX;
       startLeft = catTrack.scrollLeft;
     });
-    window.addEventListener("mouseup", () => (isDown = false));
-    catTrack.addEventListener("mouseleave", () => (isDown = false));
+    
+    const stopDrag = () => {
+      if (!isDown) return;
+      isDown = false;
+      catTrack.style.scrollBehavior = "smooth"; // Kembalikan efek smooth scroll setelah selesai menggeser
+    };
+    window.addEventListener("mouseup", stopDrag);
+    catTrack.addEventListener("mouseleave", stopDrag);
+    
     catTrack.addEventListener("mousemove", (e) => {
       if (!isDown) return;
       e.preventDefault();
@@ -1124,17 +1240,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 window.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
 
-  // close item modal if open
-  if (modal && modal.classList.contains("is-open")) closeModal();
-
-  // close category modal if open
-  if (catModal && catModal.classList.contains("is-open")) closeCategoryModal();
+  // Tutup modal paling atas dulu (catModal z-index 80 > modal z-index 50)
+  if (catModal && catModal.classList.contains("is-open")) {
+    closeCategoryModal();
+    return;
+  }
+  if (modal && modal.classList.contains("is-open")) {
+    closeModal();
+    return;
+  }
 });
 
-/* optional: reset forms on reload */
-window.onbeforeunload = () => {
-  for (const f of document.getElementsByTagName("form")) f.reset();
-};
+/* (removed: onbeforeunload form reset — menghapus draft user tanpa alasan) */
 /* =========================
    Footer year auto update
 ========================= */

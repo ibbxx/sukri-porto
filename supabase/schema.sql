@@ -47,7 +47,34 @@ CREATE TABLE IF NOT EXISTS site_content (
 );
 
 -- =========================
--- 4. AUTO-UPDATE updated_at
+-- 4. ADMIN ALLOWLIST
+-- =========================
+-- Setelah schema dijalankan, daftarkan UID admin dari Authentication > Users:
+-- INSERT INTO public.admin_users (user_id) VALUES ('ADMIN_USER_UUID');
+CREATE TABLE IF NOT EXISTS admin_users (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+
+CREATE OR REPLACE FUNCTION public.is_portfolio_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+STABLE
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.admin_users WHERE user_id = auth.uid()
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.is_portfolio_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_portfolio_admin() TO authenticated;
+
+-- =========================
+-- 5. AUTO-UPDATE updated_at
 -- =========================
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
@@ -57,20 +84,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_portfolio_items_updated ON portfolio_items;
 CREATE TRIGGER trg_portfolio_items_updated
   BEFORE UPDATE ON portfolio_items
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS trg_site_content_updated ON site_content;
 CREATE TRIGGER trg_site_content_updated
   BEFORE UPDATE ON site_content
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- =========================
--- 5. ROW LEVEL SECURITY (RLS)
+-- 6. ROW LEVEL SECURITY (RLS)
 -- =========================
 
 -- portfolio_items
 ALTER TABLE portfolio_items ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read portfolio_items" ON portfolio_items;
+DROP POLICY IF EXISTS "Auth insert portfolio_items" ON portfolio_items;
+DROP POLICY IF EXISTS "Auth update portfolio_items" ON portfolio_items;
+DROP POLICY IF EXISTS "Auth delete portfolio_items" ON portfolio_items;
 
 CREATE POLICY "Public read portfolio_items"
   ON portfolio_items FOR SELECT
@@ -78,18 +112,24 @@ CREATE POLICY "Public read portfolio_items"
 
 CREATE POLICY "Auth insert portfolio_items"
   ON portfolio_items FOR INSERT
-  WITH CHECK (auth.role() = 'authenticated');
+  WITH CHECK (public.is_portfolio_admin());
 
 CREATE POLICY "Auth update portfolio_items"
   ON portfolio_items FOR UPDATE
-  USING (auth.role() = 'authenticated');
+  USING (public.is_portfolio_admin())
+  WITH CHECK (public.is_portfolio_admin());
 
 CREATE POLICY "Auth delete portfolio_items"
   ON portfolio_items FOR DELETE
-  USING (auth.role() = 'authenticated');
+  USING (public.is_portfolio_admin());
 
 -- portfolio_sub_items
 ALTER TABLE portfolio_sub_items ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read portfolio_sub_items" ON portfolio_sub_items;
+DROP POLICY IF EXISTS "Auth insert portfolio_sub_items" ON portfolio_sub_items;
+DROP POLICY IF EXISTS "Auth update portfolio_sub_items" ON portfolio_sub_items;
+DROP POLICY IF EXISTS "Auth delete portfolio_sub_items" ON portfolio_sub_items;
 
 CREATE POLICY "Public read portfolio_sub_items"
   ON portfolio_sub_items FOR SELECT
@@ -97,18 +137,24 @@ CREATE POLICY "Public read portfolio_sub_items"
 
 CREATE POLICY "Auth insert portfolio_sub_items"
   ON portfolio_sub_items FOR INSERT
-  WITH CHECK (auth.role() = 'authenticated');
+  WITH CHECK (public.is_portfolio_admin());
 
 CREATE POLICY "Auth update portfolio_sub_items"
   ON portfolio_sub_items FOR UPDATE
-  USING (auth.role() = 'authenticated');
+  USING (public.is_portfolio_admin())
+  WITH CHECK (public.is_portfolio_admin());
 
 CREATE POLICY "Auth delete portfolio_sub_items"
   ON portfolio_sub_items FOR DELETE
-  USING (auth.role() = 'authenticated');
+  USING (public.is_portfolio_admin());
 
 -- site_content
 ALTER TABLE site_content ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read site_content" ON site_content;
+DROP POLICY IF EXISTS "Auth insert site_content" ON site_content;
+DROP POLICY IF EXISTS "Auth update site_content" ON site_content;
+DROP POLICY IF EXISTS "Auth delete site_content" ON site_content;
 
 CREATE POLICY "Public read site_content"
   ON site_content FOR SELECT
@@ -116,18 +162,19 @@ CREATE POLICY "Public read site_content"
 
 CREATE POLICY "Auth insert site_content"
   ON site_content FOR INSERT
-  WITH CHECK (auth.role() = 'authenticated');
+  WITH CHECK (public.is_portfolio_admin());
 
 CREATE POLICY "Auth update site_content"
   ON site_content FOR UPDATE
-  USING (auth.role() = 'authenticated');
+  USING (public.is_portfolio_admin())
+  WITH CHECK (public.is_portfolio_admin());
 
 CREATE POLICY "Auth delete site_content"
   ON site_content FOR DELETE
-  USING (auth.role() = 'authenticated');
+  USING (public.is_portfolio_admin());
 
 -- =========================
--- 6. STORAGE BUCKET: media
+-- 7. STORAGE BUCKET: media
 -- =========================
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
@@ -140,24 +187,30 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage policies
+DROP POLICY IF EXISTS "Public read media" ON storage.objects;
+DROP POLICY IF EXISTS "Auth upload media" ON storage.objects;
+DROP POLICY IF EXISTS "Auth update media" ON storage.objects;
+DROP POLICY IF EXISTS "Auth delete media" ON storage.objects;
+
 CREATE POLICY "Public read media"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'media');
 
 CREATE POLICY "Auth upload media"
   ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'media' AND auth.role() = 'authenticated');
+  WITH CHECK (bucket_id = 'media' AND public.is_portfolio_admin());
 
 CREATE POLICY "Auth update media"
   ON storage.objects FOR UPDATE
-  USING (bucket_id = 'media' AND auth.role() = 'authenticated');
+  USING (bucket_id = 'media' AND public.is_portfolio_admin())
+  WITH CHECK (bucket_id = 'media' AND public.is_portfolio_admin());
 
 CREATE POLICY "Auth delete media"
   ON storage.objects FOR DELETE
-  USING (bucket_id = 'media' AND auth.role() = 'authenticated');
+  USING (bucket_id = 'media' AND public.is_portfolio_admin());
 
 -- =========================
--- 7. DEFAULT SITE CONTENT
+-- 8. DEFAULT SITE CONTENT
 -- =========================
 INSERT INTO site_content (key, value) VALUES
   ('profile_photo_hero', ''),
@@ -165,7 +218,7 @@ INSERT INTO site_content (key, value) VALUES
 ON CONFLICT (key) DO NOTHING;
 
 -- =========================
--- 8. INDEXES
+-- 9. INDEXES
 -- =========================
 CREATE INDEX IF NOT EXISTS idx_portfolio_items_category ON portfolio_items(category);
 CREATE INDEX IF NOT EXISTS idx_portfolio_items_sort ON portfolio_items(sort_order);

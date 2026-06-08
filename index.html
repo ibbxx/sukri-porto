@@ -1,13 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Portofolio Fiqriansyah Surya</title>
+  <meta name="description" content="Portofolio visual Fiqriansyah Surya: desain grafis, fotografi, videografi, dan editing." />
+  <meta name="theme-color" content="#050607" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Portofolio Fiqriansyah Surya" />
+  <meta property="og:description" content="Kumpulan karya desain, fotografi, video, dan editing Fiqriansyah Surya." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23050607'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' dominant-baseline='middle' fill='white' font-family='Arial' font-size='30' font-weight='700'%3EFS%3C/text%3E%3C/svg%3E" />
 
-  <link rel="stylesheet" href="css/style.css?v=3" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+  <link rel="stylesheet" href="css/style.css?v=4" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap"
     rel="stylesheet">
   <style>
     .site-loader {
@@ -41,6 +47,12 @@
       }
     }
   </style>
+  <noscript>
+    <style>
+      .site-loader { display: none !important; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    </style>
+  </noscript>
 </head>
 
 <body>
@@ -120,7 +132,7 @@
         <div class="profile-card glass tilt reveal">
           <div class="profile-top">
             <div class="avatar">
-              <img id="profileHero" src="asset/profile2.webp" alt="Foto Profil Fiqriansyah Surya" loading="lazy">
+              <img id="profileHero" src="asset/profile2.webp" alt="Foto Profil Fiqriansyah Surya" decoding="async" fetchpriority="high">
             </div>
             <div class="profile-meta">
               <h3>Hai! Saya Fiqri.</h3>
@@ -200,7 +212,7 @@
 
       <!-- FOTO -->
       <div class="about-visual glass tilt reveal">
-        <img id="profileAbout" src="asset/Profile.webp" alt="Fiqriansyah Surya" class="about-image" loading="lazy" />
+        <img id="profileAbout" src="asset/Profile.webp" alt="Fiqriansyah Surya" class="about-image" loading="lazy" decoding="async" />
 
         <div class="about-label glass glass--thin">
           <div class="tiny">Visual Creative</div>
@@ -458,7 +470,7 @@
   <div class="cat-modal" id="catModal" aria-hidden="true">
     <div class="cat-backdrop" id="catBackdrop"></div>
 
-    <div class="cat-dialog glass" role="dialog" aria-modal="true">
+    <div class="cat-dialog glass" role="dialog" aria-modal="true" aria-labelledby="catTitle">
       <div class="cat-head">
         <div>
           <div class="badge" id="catTitleBadge">Category</div>
@@ -493,7 +505,7 @@
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="js/supabase-config.js?v=2"></script>
-  <script src="js/script.js?v=2"></script>
+  <script src="js/script.js?v=3"></script>
 </body>
 
 </html>

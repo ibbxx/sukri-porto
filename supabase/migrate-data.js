@@ -150,20 +150,20 @@ async function migrateData() {
       ],
     },
     // SHORT VIDEO IG
-    { id: "ig-short-1", title: "Rian Fahardhi - Surat untuk Elit", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DRwPYeaE5vM/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+1", description: "Short video Instagram oleh Rian Fahardhi.", tags: ["IG", "Reels", "Rian Fahardhi"] },
-    { id: "ig-short-2", title: "Rian Fahardhi - Doomscrolling", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DRBudYxk6B7/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+2", description: "Short video Instagram oleh Rian Fahardhi.", tags: ["IG", "Reels", "Rian Fahardhi"] },
-    { id: "ig-short-3", title: "Rian Fahardhi - Ketidakadilan Antar Generasi", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DSRk1Byk5l4/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+3", description: "Short video Instagram oleh Rian Fahardhi.", tags: ["IG", "Reels", "Rian Fahardhi"] },
-    { id: "ig-short-4", title: "Rian Fahardhi - Short ad Launching Buku Filsafat Kecemasan", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DVOSg4eE7FG/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+4", description: "", tags: ["IG", "Reels", "Ads"] },
-    { id: "ig-short-5", title: "Mitologi Bumi Sulawesi - Tradisi Sayyang Pattuqduq", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DDyy_1tzCgX/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+5", description: "Mitologi Bumi Sulawesi – Tradisi Sayyang Pattuqduq.", tags: ["IG", "Reels", "Budaya", "Sulawesi"] },
-    { id: "ig-short-6", title: "Mitologi Bumi Sulawesi - Tindakan Amoral Terhadap Perempuan", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DCvI-kKTvpj/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+6", description: "Mitologi Bumi Sulawesi – isu sosial & perempuan.", tags: ["IG", "Reels", "Sosial"] },
-    { id: "ig-short-7", title: "Mitologi Bumi Sulawesi - Tradisi Pakkio' Bunting", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DAkjcBRRb3C/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+7", description: "Mitologi Bumi Sulawesi – Tradisi Pakkio' Bunting.", tags: ["IG", "Reels", "Budaya"] },
-    { id: "ig-short-8", title: "Muhammad Yusran - Pappasang Karaeng Pattingalloang", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C-8wzkwxOQY/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+8", description: "Muhammad Yusran – Pappasang Karaeng Pattingalloang.", tags: ["IG", "Reels", "Sejarah"] },
-    { id: "ig-short-9", title: "Mitologi Bumi Sulawesi - Abdi Mahesa", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C-vi3cWxVqu/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+9", description: "Mitologi Bumi Sulawesi – Abdi Mahesa.", tags: ["IG", "Reels", "Budaya"] },
-    { id: "ig-short-10", title: "Mitologi Bumi Sulawesi - Kemerdekaan Bajeng 14 Agustus 1945", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C-oNqH5x8A3/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+10", description: "Mitologi Bumi Sulawesi – sejarah lokal.", tags: ["IG", "Reels", "Sejarah"] },
-    { id: "ig-short-11", title: "Rian Fahardhi - Retna Kencana Colliq Pujie", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C-Cd5L9RwEr/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+11", description: "Rian Fahardhi – tokoh perempuan Nusantara.", tags: ["IG", "Reels", "Tokoh"] },
-    { id: "ig-short-12", title: "Aida Gunawan - Pergeseran Nilai Budaya Dalam Tradisi Pernikahan Adat Bugis Makassar", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C8mZAEGRVwX/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+12", description: "Aida Gunawan – budaya Bugis Makassar.", tags: ["IG", "Reels", "Budaya"] },
-    { id: "ig-short-13", title: "Rian Fahardhi - Pappasang Kajaolaliddong", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C7Vu1eXvT2I/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+13", description: "Rian Fahardhi – Pappasang Kajaolaliddong.", tags: ["IG", "Reels", "Budaya"] },
-    { id: "ig-short-14", title: "Mitologi Bumi Sulawesi - Tradisi Tumbilotohe", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C5hHsjdR0j0/", embedUrl: "", thumbnailUrl: "https://via.placeholder.com/900x600.png?text=IG+Reels+14", description: "Mitologi Bumi Sulawesi – Tradisi Tumbilotohe.", tags: ["IG", "Reels", "Budaya"] },
+    { id: "ig-short-1", title: "Rian Fahardhi - Surat untuk Elit", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DRwPYeaE5vM/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/DRwPYeaE5vM/media/?size=l", description: "Short video Instagram oleh Rian Fahardhi.", tags: ["IG", "Reels", "Rian Fahardhi"] },
+    { id: "ig-short-2", title: "Rian Fahardhi - Doomscrolling", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DRBudYxk6B7/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/DRBudYxk6B7/media/?size=l", description: "Short video Instagram oleh Rian Fahardhi.", tags: ["IG", "Reels", "Rian Fahardhi"] },
+    { id: "ig-short-3", title: "Rian Fahardhi - Ketidakadilan Antar Generasi", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DSRk1Byk5l4/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/DSRk1Byk5l4/media/?size=l", description: "Short video Instagram oleh Rian Fahardhi.", tags: ["IG", "Reels", "Rian Fahardhi"] },
+    { id: "ig-short-4", title: "Rian Fahardhi - Short ad Launching Buku Filsafat Kecemasan", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DVOSg4eE7FG/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/DVOSg4eE7FG/media/?size=l", description: "", tags: ["IG", "Reels", "Ads"] },
+    { id: "ig-short-5", title: "Mitologi Bumi Sulawesi - Tradisi Sayyang Pattuqduq", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DDyy_1tzCgX/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/DDyy_1tzCgX/media/?size=l", description: "Mitologi Bumi Sulawesi – Tradisi Sayyang Pattuqduq.", tags: ["IG", "Reels", "Budaya", "Sulawesi"] },
+    { id: "ig-short-6", title: "Mitologi Bumi Sulawesi - Tindakan Amoral Terhadap Perempuan", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DCvI-kKTvpj/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/DCvI-kKTvpj/media/?size=l", description: "Mitologi Bumi Sulawesi – isu sosial & perempuan.", tags: ["IG", "Reels", "Sosial"] },
+    { id: "ig-short-7", title: "Mitologi Bumi Sulawesi - Tradisi Pakkio' Bunting", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DAkjcBRRb3C/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/DAkjcBRRb3C/media/?size=l", description: "Mitologi Bumi Sulawesi – Tradisi Pakkio' Bunting.", tags: ["IG", "Reels", "Budaya"] },
+    { id: "ig-short-8", title: "Muhammad Yusran - Pappasang Karaeng Pattingalloang", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C-8wzkwxOQY/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/C-8wzkwxOQY/media/?size=l", description: "Muhammad Yusran – Pappasang Karaeng Pattingalloang.", tags: ["IG", "Reels", "Sejarah"] },
+    { id: "ig-short-9", title: "Mitologi Bumi Sulawesi - Abdi Mahesa", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C-vi3cWxVqu/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/C-vi3cWxVqu/media/?size=l", description: "Mitologi Bumi Sulawesi – Abdi Mahesa.", tags: ["IG", "Reels", "Budaya"] },
+    { id: "ig-short-10", title: "Mitologi Bumi Sulawesi - Kemerdekaan Bajeng 14 Agustus 1945", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C-oNqH5x8A3/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/C-oNqH5x8A3/media/?size=l", description: "Mitologi Bumi Sulawesi – sejarah lokal.", tags: ["IG", "Reels", "Sejarah"] },
+    { id: "ig-short-11", title: "Rian Fahardhi - Retna Kencana Colliq Pujie", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C-Cd5L9RwEr/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/C-Cd5L9RwEr/media/?size=l", description: "Rian Fahardhi – tokoh perempuan Nusantara.", tags: ["IG", "Reels", "Tokoh"] },
+    { id: "ig-short-12", title: "Aida Gunawan - Pergeseran Nilai Budaya Dalam Tradisi Pernikahan Adat Bugis Makassar", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C8mZAEGRVwX/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/C8mZAEGRVwX/media/?size=l", description: "Aida Gunawan – budaya Bugis Makassar.", tags: ["IG", "Reels", "Budaya"] },
+    { id: "ig-short-13", title: "Rian Fahardhi - Pappasang Kajaolaliddong", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C7Vu1eXvT2I/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/C7Vu1eXvT2I/media/?size=l", description: "Rian Fahardhi – Pappasang Kajaolaliddong.", tags: ["IG", "Reels", "Budaya"] },
+    { id: "ig-short-14", title: "Mitologi Bumi Sulawesi - Tradisi Tumbilotohe", category: "Short Video (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/C5hHsjdR0j0/", embedUrl: "", thumbnailUrl: "https://www.instagram.com/p/C5hHsjdR0j0/media/?size=l", description: "Mitologi Bumi Sulawesi – Tradisi Tumbilotohe.", tags: ["IG", "Reels", "Budaya"] },
     // BUMPER EVENT IG
     { id: "ig-bumper-1", title: "Event Bumper Maujud Budaya Mitologi Bumi Sulawesi 2025", category: "Bumper Event (IG)", type: "link", sourceUrl: "https://www.instagram.com/p/DBkCWiKx9IX/", embedUrl: "", thumbnailUrl: "", description: "Bumper event Maujud Budaya Mitologi Bumi Sulawesi 2025.", tags: ["IG", "Bumper", "Event"] },
     // FEED CAROUSEL IG
@@ -230,23 +230,31 @@ async function migrateData() {
   };
 
   // ---- INSERT portfolio_items ----
-  const rows = portfolioData.map((item, idx) => ({
-    id: item.id,
-    title: item.title,
-    category: item.category,
-    type: item.type,
-    source_url: item.sourceUrl || '',
-    embed_url: item.embedUrl || '',
-    thumbnail_url: item.thumbnailUrl || '',
-    description: item.description || '',
-    tags: item.tags || [],
-    sort_order: idx,
-    is_featured: FEATURED_IDS.includes(item.id),
-    featured_thumb: FEATURED_THUMBS[item.id] || '',
-  }));
+  const rows = portfolioData.map((item, idx) => {
+    const sourceUrl = item.sourceUrl || '';
+    let thumbnailUrl = item.thumbnailUrl || '';
+    if (thumbnailUrl.includes('via.placeholder.com') && sourceUrl.includes('instagram.com/p/')) {
+      thumbnailUrl = `${sourceUrl.split('?')[0].replace(/\/?$/, '/')}media/?size=l`;
+    }
+
+    return {
+      id: item.id,
+      title: item.title,
+      category: item.category,
+      type: item.type,
+      source_url: sourceUrl,
+      embed_url: item.embedUrl || '',
+      thumbnail_url: thumbnailUrl,
+      description: item.description || '',
+      tags: item.tags || [],
+      sort_order: idx,
+      is_featured: FEATURED_IDS.includes(item.id),
+      featured_thumb: FEATURED_THUMBS[item.id] || '',
+    };
+  });
 
   console.log(`📦 Inserting ${rows.length} portfolio items...`);
-  const { data: insertedItems, error: itemsErr } = await supabase
+  const { data: insertedItems, error: itemsErr } = await supabaseClient
     .from('portfolio_items')
     .upsert(rows, { onConflict: 'id' })
     .select();
@@ -276,8 +284,18 @@ async function migrateData() {
   });
 
   if (subRows.length) {
+    const parentIds = [...new Set(subRows.map(row => row.parent_id))];
+    const { error: deleteSubsErr } = await supabaseClient
+      .from('portfolio_sub_items')
+      .delete()
+      .in('parent_id', parentIds);
+    if (deleteSubsErr) {
+      console.error('❌ Error membersihkan sub-items lama:', deleteSubsErr);
+      return;
+    }
+
     console.log(`📦 Inserting ${subRows.length} sub-items...`);
-    const { error: subErr } = await supabase
+    const { error: subErr } = await supabaseClient
       .from('portfolio_sub_items')
       .insert(subRows);
 
@@ -290,12 +308,12 @@ async function migrateData() {
 
   // ---- INSERT site_content defaults ----
   console.log('📦 Inserting site content defaults...');
-  const { error: siteErr } = await supabase
+  const { error: siteErr } = await supabaseClient
     .from('site_content')
     .upsert([
       { key: 'profile_photo_hero', value: '' },
       { key: 'profile_photo_about', value: '' },
-    ], { onConflict: 'key' });
+    ], { onConflict: 'key', ignoreDuplicates: true });
 
   if (siteErr) {
     console.error('❌ Error inserting site content:', siteErr);

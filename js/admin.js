@@ -4,6 +4,7 @@
 ========================================================= */
 
 const MAX_FILE_SIZE = 1048576; // 1 MB
+const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
 /* =========================
    TOAST
@@ -15,17 +16,17 @@ function toast(message, type = 'success') {
   
   const bgClass = type === 'success' 
     ? 'bg-zinc-900 border-emerald-500/35 text-zinc-100 shadow-emerald-950/20' 
-    : 'bg-zinc-900 border-red-500/35 text-red-205 shadow-red-950/20';
+    : 'bg-zinc-900 border-red-500/35 text-red-200 shadow-red-950/20';
   
   const icon = type === 'success'
     ? `<svg class="text-emerald-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`
     : `<svg class="text-red-500 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12" y1="16" y2="16.01"/></svg>`;
 
   el.className = `flex items-center gap-3 px-4 py-3 rounded-lg border shadow-xl text-xs font-semibold transition-all duration-300 transform translate-y-2 opacity-0 ${bgClass}`;
-  el.innerHTML = `
-    ${icon}
-    <span>${message}</span>
-  `;
+  el.innerHTML = icon;
+  const text = document.createElement('span');
+  text.textContent = String(message);
+  el.appendChild(text);
   container.appendChild(el);
   
   requestAnimationFrame(() => {
@@ -57,12 +58,34 @@ function showLogin() {
   if (adminApp) adminApp.style.display = 'none';
 }
 
+async function authorizeAdmin() {
+  const { data, error } = await supabaseClient.rpc('is_portfolio_admin');
+  if (error) throw error;
+  return data === true;
+}
+
+async function enterAdmin() {
+  const allowed = await authorizeAdmin();
+  if (!allowed) {
+    await supabaseClient.auth.signOut();
+    showLogin();
+    if (loginError) loginError.textContent = 'Akun ini tidak memiliki akses admin.';
+    return;
+  }
+  showApp();
+  await initAdmin();
+}
+
 // Check session on load
 (async () => {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) {
-    showApp();
-    await initAdmin();
+    try {
+      await enterAdmin();
+    } catch (err) {
+      showLogin();
+      if (loginError) loginError.textContent = err.message || 'Gagal memverifikasi akses admin.';
+    }
   } else {
     showLogin();
   }
@@ -83,8 +106,13 @@ loginForm?.addEventListener('submit', async (e) => {
     return;
   }
 
-  showApp();
-  await initAdmin();
+  try {
+    await enterAdmin();
+  } catch (err) {
+    await supabaseClient.auth.signOut();
+    showLogin();
+    loginError.textContent = err.message || 'Gagal memverifikasi akses admin.';
+  }
 });
 
 // Logout
@@ -110,6 +138,10 @@ tabs.forEach(tab => {
     if (tabSettings) tabSettings.style.display = target === 'settings' ? 'block' : 'none';
   });
 });
+
+// Set tab default aktif
+const defaultTab = document.querySelector('.tab[data-tab="portfolio"]');
+if (defaultTab) defaultTab.classList.add('is-active');
 
 /* =========================
    DATA STATE
@@ -235,12 +267,16 @@ function renderItems() {
   }
 
   grid.innerHTML = filtered.map(item => {
-    const thumb = item.thumbnail_url || '';
+    const ytId = item.type === 'youtube' ? getYoutubeId(item.source_url || item.embed_url) : '';
+    const thumb = item.thumbnail_url || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
     const hasSubs = allSubs.some(s => s.parent_id === item.id);
     const subsCount = allSubs.filter(s => s.parent_id === item.id).length;
 
     const thumbHtml = thumb
-      ? `<img src="${esc(thumb)}" alt="" onerror="this.parentElement.innerHTML='<div class=\\'item-thumb-empty\\'><svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'28\\' height=\\'28\\' viewBox=\\'0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\'><rect width=\\'18\\' height=\\'18\\' x=\\'3\\' y=\\'3\\' rx=\\'2\\' ry=\\'2\\'/><circle cx=\\'9\\' cy=\\'9\\' r=\\'2\\'/><path d=\\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\\'/></svg></div>'"/>`
+      ? `<img src="${esc(thumb)}" alt="" loading="lazy" onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <div class="item-thumb-empty" style="display:none">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+        </div>`
       : `<div class="item-thumb-empty">
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
         </div>`;
@@ -376,7 +412,10 @@ function openEditModal(id) {
   document.getElementById('itemSourceUrl').value = item.source_url || '';
   document.getElementById('itemEmbedUrl').value = item.embed_url || '';
   document.getElementById('itemDesc').value = item.description || '';
-  document.getElementById('itemTags').value = (item.tags || []).join(', ');
+  const tagsArray = Array.isArray(item.tags)
+    ? item.tags
+    : (typeof item.tags === 'string' ? item.tags.split(',').map(t => t.trim()) : []);
+  document.getElementById('itemTags').value = tagsArray.join(', ');
   document.getElementById('itemFeatured').checked = !!item.is_featured;
   let thumbUrl = item.thumbnail_url || '';
   if (!thumbUrl && item.type === 'youtube') {
@@ -412,7 +451,7 @@ function closeItemModal() {
 
 function getYoutubeId(url) {
   if (!url) return "";
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : "";
 }
@@ -493,6 +532,11 @@ thumbFile?.addEventListener('change', (e) => {
     thumbFile.value = '';
     return;
   }
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    toast('Format gambar harus JPG, PNG, WebP, atau GIF.', 'error');
+    thumbFile.value = '';
+    return;
+  }
   pendingThumbFile = file;
   const url = URL.createObjectURL(file);
   setThumbPreview(url);
@@ -532,6 +576,11 @@ featuredThumbFile?.addEventListener('change', (e) => {
     featuredThumbFile.value = '';
     return;
   }
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+    toast('Format gambar harus JPG, PNG, WebP, atau GIF.', 'error');
+    featuredThumbFile.value = '';
+    return;
+  }
   pendingFeaturedThumbFile = file;
   setFeaturedThumbPreview(URL.createObjectURL(file));
 });
@@ -568,30 +617,45 @@ function updateSubItemsUI() {
   if (!list) return;
 
   list.innerHTML = editingSubItems.map((sub, idx) => `
-    <div class="flex flex-col md:flex-row gap-3 bg-zinc-900/50 p-4 border border-zinc-800 rounded-lg mb-2 relative sub-item-row" data-idx="${idx}">
-      <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div class="flex flex-col gap-3 bg-zinc-900/50 p-4 border border-zinc-800 rounded-lg mb-2 relative sub-item-row" data-idx="${idx}">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div class="flex flex-col gap-1">
           <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Judul</label>
-          <input type="text" value="${esc(sub.title)}" data-field="title" class="bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-650 focus:outline-none focus:ring-1 focus:ring-zinc-400 w-full" />
+          <input type="text" value="${esc(sub.title)}" data-field="title" class="bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-400 w-full" />
         </div>
         <div class="flex flex-col gap-1">
+          <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Tipe</label>
+          <select data-field="type" class="bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:ring-1 focus:ring-zinc-400 w-full">
+            <option value="drive_video" ${sub.type === 'drive_video' ? 'selected' : ''}>Drive Video</option>
+            <option value="drive_image" ${sub.type === 'drive_image' ? 'selected' : ''}>Drive Image</option>
+            <option value="drive_subfolder" ${sub.type === 'drive_subfolder' ? 'selected' : ''}>Drive Subfolder</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="flex flex-col gap-1">
           <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Source URL</label>
-          <input type="text" value="${esc(sub.source_url)}" data-field="source_url" class="bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-650 focus:outline-none focus:ring-1 focus:ring-zinc-400 w-full" />
+          <input type="text" value="${esc(sub.source_url)}" data-field="source_url" class="bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-400 w-full" />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Embed URL</label>
-          <input type="text" value="${esc(sub.embed_url)}" data-field="embed_url" class="bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-650 focus:outline-none focus:ring-1 focus:ring-zinc-400 w-full" />
+          <input type="text" value="${esc(sub.embed_url)}" data-field="embed_url" class="bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-400 w-full" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">Folder URL</label>
+          <input type="text" value="${esc(sub.folder_url || '')}" data-field="folder_url" class="bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-400 w-full" />
         </div>
       </div>
-      <button type="button" class="md:self-end bg-transparent hover:bg-red-950/20 border border-zinc-800 hover:border-red-900/30 text-zinc-400 hover:text-red-400 w-8 h-8 rounded-md flex items-center justify-center transition-colors sub-remove-btn" data-idx="${idx}">
+      <button type="button" class="absolute top-3 right-3 bg-transparent hover:bg-red-950/20 border border-zinc-800 hover:border-red-900/30 text-zinc-400 hover:text-red-400 w-7 h-7 rounded-md flex items-center justify-center transition-colors sub-remove-btn" data-idx="${idx}">
         ✕
       </button>
     </div>
   `).join('');
 
-  // Sync inputs
-  list.querySelectorAll('input').forEach(inp => {
-    inp.addEventListener('input', () => {
+  // Sync inputs (termasuk select)
+  list.querySelectorAll('input, select').forEach(inp => {
+    const evtType = inp.tagName === 'SELECT' ? 'change' : 'input';
+    inp.addEventListener(evtType, () => {
       const row = inp.closest('.sub-item-row');
       const idx = parseInt(row.dataset.idx);
       const field = inp.dataset.field;
@@ -627,6 +691,57 @@ async function uploadFile(file, folder) {
   return urlData.publicUrl;
 }
 
+function mediaPathFromUrl(url) {
+  const marker = '/storage/v1/object/public/media/';
+  try {
+    const parsed = new URL(String(url || ''));
+    if (parsed.host !== new URL(SUPABASE_URL).host || !parsed.pathname.startsWith(marker)) return '';
+    return decodeURIComponent(parsed.pathname.slice(marker.length));
+  } catch {
+    return '';
+  }
+}
+
+async function removeMediaUrls(urls) {
+  const paths = [...new Set((urls || []).map(mediaPathFromUrl).filter(Boolean))];
+  if (!paths.length) return;
+  const { error } = await supabaseClient.storage.from('media').remove(paths);
+  if (error) throw error;
+}
+
+async function replaceSubItems(parentId, type) {
+  const oldIds = allSubs.filter(s => s.parent_id === parentId).map(s => s.id);
+  let insertedIds = [];
+
+  if (type === 'drive_folder' && editingSubItems.length) {
+    const subRows = editingSubItems.map((s, i) => ({
+      parent_id: parentId,
+      title: s.title || `Item ${i + 1}`,
+      type: s.type || 'drive_video',
+      source_url: s.source_url || '',
+      embed_url: s.embed_url || '',
+      folder_url: s.folder_url || '',
+      sort_order: i,
+    }));
+
+    const { data, error } = await supabaseClient
+      .from('portfolio_sub_items')
+      .insert(subRows)
+      .select('id');
+    if (error) throw error;
+    insertedIds = (data || []).map(row => row.id);
+  }
+
+  if (!oldIds.length) return;
+  const { error } = await supabaseClient.from('portfolio_sub_items').delete().in('id', oldIds);
+  if (!error) return;
+
+  if (insertedIds.length) {
+    await supabaseClient.from('portfolio_sub_items').delete().in('id', insertedIds);
+  }
+  throw error;
+}
+
 /* =========================
    SAVE ITEM (CREATE / UPDATE)
 ========================= */
@@ -645,7 +760,9 @@ itemForm?.addEventListener('submit', async (e) => {
   const embedUrl = document.getElementById('itemEmbedUrl').value.trim();
   const description = document.getElementById('itemDesc').value.trim();
   const tagsStr = document.getElementById('itemTags').value.trim();
-  const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const tags = tagsStr
+    ? [...new Set(tagsStr.split(',').map(t => t.trim()).filter(Boolean))]
+    : [];
   const isFeatured = document.getElementById('itemFeatured').checked;
 
   let thumbnailUrl = document.getElementById('itemThumbUrl').value;
@@ -658,16 +775,28 @@ itemForm?.addEventListener('submit', async (e) => {
 
   // Generate ID for new items
   const id = existingId || generateId(category, title);
+  const previousItem = existingId ? allItems.find(item => item.id === existingId) : null;
+  const uploadedUrls = [];
+  let rowSaved = false;
+
+  // Disable submit button untuk mencegah double-submit
+  const submitBtn = itemForm.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Menyimpan...';
+  }
 
   try {
     // Upload thumbnail if pending
     if (pendingThumbFile) {
       thumbnailUrl = await uploadFile(pendingThumbFile, 'thumbnails');
+      uploadedUrls.push(thumbnailUrl);
     }
 
     // Upload featured thumb if pending
     if (pendingFeaturedThumbFile) {
       featuredThumb = await uploadFile(pendingFeaturedThumbFile, 'featured');
+      uploadedUrls.push(featuredThumb);
     }
 
     const row = {
@@ -690,30 +819,21 @@ itemForm?.addEventListener('submit', async (e) => {
       .upsert(row, { onConflict: 'id' });
 
     if (error) throw error;
+    rowSaved = true;
 
-    // Save sub-items (for drive_folder)
-    if (type === 'drive_folder') {
-      // Delete old subs
-      await supabaseClient.from('portfolio_sub_items').delete().eq('parent_id', id);
+    await replaceSubItems(id, type);
 
-      // Insert new subs
-      if (editingSubItems.length) {
-        const subRows = editingSubItems.map((s, i) => ({
-          parent_id: id,
-          title: s.title || `Item ${i+1}`,
-          type: s.type || 'drive_video',
-          source_url: s.source_url || '',
-          embed_url: s.embed_url || '',
-          folder_url: s.folder_url || '',
-          sort_order: i,
-        }));
-
-        const { error: subErr } = await supabaseClient
-          .from('portfolio_sub_items')
-          .insert(subRows);
-
-        if (subErr) throw subErr;
-      }
+    const replacedUrls = [];
+    if (previousItem?.thumbnail_url && previousItem.thumbnail_url !== thumbnailUrl) {
+      replacedUrls.push(previousItem.thumbnail_url);
+    }
+    if (previousItem?.featured_thumb && previousItem.featured_thumb !== featuredThumb) {
+      replacedUrls.push(previousItem.featured_thumb);
+    }
+    try {
+      await removeMediaUrls(replacedUrls);
+    } catch (cleanupErr) {
+      toast('Item tersimpan, tetapi media lama gagal dibersihkan: ' + cleanupErr.message, 'error');
     }
 
     toast(existingId ? 'Item berhasil diupdate!' : 'Item berhasil ditambahkan!');
@@ -721,7 +841,24 @@ itemForm?.addEventListener('submit', async (e) => {
     await loadItems();
 
   } catch (err) {
+    if (rowSaved) {
+      if (previousItem) {
+        await supabaseClient.from('portfolio_items').upsert(previousItem, { onConflict: 'id' });
+      } else {
+        await supabaseClient.from('portfolio_items').delete().eq('id', id);
+      }
+    }
+    try {
+      await removeMediaUrls(uploadedUrls);
+    } catch {
+      // Cleanup best-effort; original error remains the useful message.
+    }
     toast('Error: ' + (err.message || err), 'error');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Simpan';
+    }
   }
 });
 
@@ -761,6 +898,9 @@ deleteModalClose?.addEventListener('click', () => { deleteModal.style.display = 
 
 deleteConfirmBtn?.addEventListener('click', async () => {
   if (!deleteTargetId) return;
+  const item = allItems.find(row => row.id === deleteTargetId);
+  deleteConfirmBtn.disabled = true;
+  deleteConfirmBtn.textContent = 'Menghapus...';
 
   try {
     // Sub-items cascade via FK ON DELETE CASCADE
@@ -771,6 +911,12 @@ deleteConfirmBtn?.addEventListener('click', async () => {
 
     if (error) throw error;
 
+    try {
+      await removeMediaUrls([item?.thumbnail_url, item?.featured_thumb]);
+    } catch (cleanupErr) {
+      toast('Item terhapus, tetapi media lama gagal dibersihkan: ' + cleanupErr.message, 'error');
+    }
+
     toast('Item berhasil dihapus.');
     deleteModal.style.display = 'none';
     deleteTargetId = null;
@@ -778,6 +924,9 @@ deleteConfirmBtn?.addEventListener('click', async () => {
 
   } catch (err) {
     toast('Error hapus: ' + (err.message || err), 'error');
+  } finally {
+    deleteConfirmBtn.disabled = false;
+    deleteConfirmBtn.textContent = 'Hapus';
   }
 });
 
@@ -809,6 +958,8 @@ async function loadSiteContent() {
 }
 
 function setupPhotoUploaders() {
+  if (setupPhotoUploaders.initialized) return;
+  setupPhotoUploaders.initialized = true;
   setupSingleUploader('dropHero', 'fileHero', 'previewHero', 'saveHero', 'profile_photo_hero', 'profile');
   setupSingleUploader('dropAbout', 'fileAbout', 'previewAbout', 'saveAbout', 'profile_photo_about', 'profile');
 }
@@ -843,8 +994,8 @@ function setupSingleUploader(dropId, fileId, previewId, btnId, contentKey, folde
       toast('File terlalu besar! Maksimal 1 MB.', 'error');
       return;
     }
-    if (!file.type.startsWith('image/')) {
-      toast('Hanya file gambar yang diizinkan.', 'error');
+    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+      toast('Format gambar harus JPG, PNG, WebP, atau GIF.', 'error');
       return;
     }
     selectedFile = file;
@@ -859,8 +1010,11 @@ function setupSingleUploader(dropId, fileId, previewId, btnId, contentKey, folde
     saveBtn.disabled = true;
     saveBtn.textContent = 'Mengupload...';
 
+    let uploadedUrl = '';
     try {
+      const oldUrl = siteContent[contentKey] || '';
       const publicUrl = await uploadFile(selectedFile, folder);
+      uploadedUrl = publicUrl;
 
       // Update site_content
       const { error } = await supabaseClient
@@ -870,14 +1024,25 @@ function setupSingleUploader(dropId, fileId, previewId, btnId, contentKey, folde
       if (error) throw error;
 
       siteContent[contentKey] = publicUrl;
+      try {
+        await removeMediaUrls([oldUrl]);
+      } catch (cleanupErr) {
+        toast('Foto tersimpan, tetapi media lama gagal dibersihkan: ' + cleanupErr.message, 'error');
+      }
       toast('Foto profil berhasil diupdate!');
       selectedFile = null;
 
     } catch (err) {
+      try {
+        await removeMediaUrls([uploadedUrl]);
+      } catch {
+        // Cleanup best-effort; original error remains the useful message.
+      }
+      if (preview && siteContent[contentKey]) preview.src = siteContent[contentKey];
       toast('Gagal upload: ' + (err.message || err), 'error');
     } finally {
       saveBtn.textContent = 'Upload & Simpan';
-      saveBtn.disabled = true;
+      saveBtn.disabled = !selectedFile;
     }
   });
 }
