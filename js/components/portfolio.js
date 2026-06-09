@@ -17,6 +17,8 @@ function rebuildCategories() {
 }
 
 function attachTiltTo(selector) {
+  if (typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) return;
+
   const nodes = document.querySelectorAll(selector);
   nodes.forEach((card) => {
     if (card.dataset.tiltBound === "1") return;

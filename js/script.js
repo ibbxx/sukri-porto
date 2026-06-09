@@ -7,7 +7,10 @@ import { setFeaturedData, initFeatured } from './components/featured.js';
 /* =========================================================
    MOUSE GLOW (CSS vars)
 ========================================================= */
+const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
 (() => {
+  if (isTouchDevice()) return;
   let raf = 0;
   window.addEventListener("mousemove", (e) => {
     if (raf) return;
@@ -41,6 +44,8 @@ function initRevealOnScroll() {
    MAGNETIC EFFECT
 ========================================================= */
 function attachMagneticTo(selector) {
+  if (isTouchDevice()) return;
+  
   const nodes = document.querySelectorAll(selector);
   nodes.forEach((btn) => {
     if (btn.dataset.magnetBound === "1") return;
@@ -229,41 +234,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     yearEl.textContent = new Date().getFullYear();
   }
 
-  // Mobile Nav Auto Hide on Scroll
+  // Mobile Nav Hamburger Toggle
+  const navToggle = document.getElementById('navToggle');
   const navMenu = document.querySelector('.nav-menu');
-  if (navMenu) {
-    let lastScrollY = window.scrollY;
-    
-    window.addEventListener('scroll', () => {
-      if (window.innerWidth <= 768) {
-        if (window.scrollY > 50 && window.scrollY > lastScrollY) {
-          navMenu.classList.add('hide-on-mobile');
-        } else {
-          navMenu.classList.remove('hide-on-mobile');
-        }
-      } else {
-        navMenu.classList.remove('hide-on-mobile');
-      }
-      lastScrollY = window.scrollY;
-    }, { passive: true });
+  
+  if (navToggle && navMenu) {
+    const toggleMenu = () => {
+      const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+      navToggle.setAttribute('aria-expanded', !isExpanded);
+      navMenu.classList.toggle('is-open');
+    };
 
-    // Sembunyikan menu navigasi mobile saat link diklik
+    navToggle.addEventListener('click', toggleMenu);
+
+    // Hide menu when link is clicked
     const navLinks = navMenu.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
       link.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
-          navMenu.classList.add('hide-on-mobile');
-        }
+        navToggle.setAttribute('aria-expanded', 'false');
+        navMenu.classList.remove('is-open');
       });
     });
 
-    // Sembunyikan menu navigasi mobile saat klik di luar area navbar
+    // Hide menu when clicking outside
     document.addEventListener('click', (e) => {
-      if (window.innerWidth <= 768) {
-        const navbar = document.querySelector('.navbar');
-        if (navbar && !navbar.contains(e.target)) {
-          navMenu.classList.add('hide-on-mobile');
-        }
+      const navbar = document.querySelector('.navbar');
+      if (navbar && !navbar.contains(e.target) && navMenu.classList.contains('is-open')) {
+        navToggle.setAttribute('aria-expanded', 'false');
+        navMenu.classList.remove('is-open');
       }
     });
   }

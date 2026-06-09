@@ -328,11 +328,25 @@ export function initModalEvents() {
   const catModal = document.getElementById("catModal");
   const modal = document.getElementById("modal");
 
-  if (modalBackdrop) modalBackdrop.addEventListener("click", closeModal);
+  if (modalBackdrop) {
+    modalBackdrop.addEventListener("click", closeModal);
+  }
   if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeModal);
 
-  if (catBackdrop) catBackdrop.addEventListener("click", closeCategoryModal);
+  if (modal) {
+    const dialog = modal.querySelector('.modal-dialog');
+    if (dialog) dialog.addEventListener("click", (e) => e.stopPropagation());
+  }
+
+  if (catBackdrop) {
+    catBackdrop.addEventListener("click", closeCategoryModal);
+  }
   if (catCloseBtn) catCloseBtn.addEventListener("click", closeCategoryModal);
+
+  if (catModal) {
+    const dialog = catModal.querySelector('.cat-dialog');
+    if (dialog) dialog.addEventListener("click", (e) => e.stopPropagation());
+  }
 
   if (catPrev) {
     catPrev.addEventListener("click", () => {
@@ -381,33 +395,36 @@ export function initModalEvents() {
       }, 80);
     });
 
-    // drag to scroll
-    let isDown = false;
-    let startX = 0;
-    let startLeft = 0;
+    // drag to scroll (only for non-touch to avoid interfering with native touch scrolling)
+    const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    if (!isTouch) {
+      let isDown = false;
+      let startX = 0;
+      let startLeft = 0;
 
-    catTrack.addEventListener("mousedown", (e) => {
-      isDown = true;
-      catTrack.style.scrollBehavior = "auto";
-      startX = e.pageX;
-      startLeft = catTrack.scrollLeft;
-    });
-    
-    const stopDrag = () => {
-      if (!isDown) return;
-      isDown = false;
-      catTrack.style.scrollBehavior = "smooth";
-    };
-    
-    window.addEventListener("mouseup", stopDrag);
-    catTrack.addEventListener("mouseleave", stopDrag);
-    
-    catTrack.addEventListener("mousemove", (e) => {
-      if (!isDown) return;
-      e.preventDefault();
-      const dx = e.pageX - startX;
-      catTrack.scrollLeft = startLeft - dx;
-    });
+      catTrack.addEventListener("mousedown", (e) => {
+        isDown = true;
+        catTrack.style.scrollBehavior = "auto";
+        startX = e.pageX;
+        startLeft = catTrack.scrollLeft;
+      });
+      
+      const stopDrag = () => {
+        if (!isDown) return;
+        isDown = false;
+        catTrack.style.scrollBehavior = "smooth";
+      };
+      
+      window.addEventListener("mouseup", stopDrag);
+      catTrack.addEventListener("mouseleave", stopDrag);
+      
+      catTrack.addEventListener("mousemove", (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const dx = e.pageX - startX;
+        catTrack.scrollLeft = startLeft - dx;
+      });
+    }
   }
 
   // Escape to close
