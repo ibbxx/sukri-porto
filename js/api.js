@@ -121,13 +121,10 @@ export async function deletePortfolioItem(id) {
 
 export async function replaceSubItems(parentId, type, editingSubItems, allSubs) {
   const client = getClient();
-  const oldIds = allSubs.filter(s => s.parent_id === parentId).map(s => s.id);
 
   // 1. Delete data lama terlebih dahulu
-  if (oldIds.length) {
-    const { error: deleteError } = await client.from('portfolio_sub_items').delete().in('id', oldIds);
-    if (deleteError) throw deleteError;
-  }
+  const { error: deleteError } = await client.from('portfolio_sub_items').delete().eq('parent_id', parentId);
+  if (deleteError) throw deleteError;
 
   // 2. Insert data baru
   if (type === 'drive_folder' && editingSubItems.length) {

@@ -214,7 +214,41 @@
 
     <div class="featured-shell glass reveal">
       <div class="featured-marquee" id="featuredMarquee" aria-label="Featured projects carousel">
-        <div class="featured-track" id="featuredTrack"></div>
+        <div class="featured-track" id="featuredTrack">
+          <!-- Skeletons (Shadcn UI style) -->
+          <article class="featured-card animate-pulse" style="pointer-events: none;">
+            <div class="featured-badge skeleton" style="height: 24px; width: 70px; border-radius: 999px; border: none; background-color: rgba(255, 255, 255, 0.08);"></div>
+            <div class="featured-media skeleton" style="height: 100%; width: 100%;"></div>
+            <div class="featured-overlay" style="display: grid; gap: 8px; z-index: 2;">
+              <div class="featured-kicker skeleton" style="height: 16px; width: 50%;"></div>
+              <div class="featured-line skeleton" style="height: 12px; width: 75%;"></div>
+            </div>
+          </article>
+          <article class="featured-card animate-pulse" style="pointer-events: none;">
+            <div class="featured-badge skeleton" style="height: 24px; width: 70px; border-radius: 999px; border: none; background-color: rgba(255, 255, 255, 0.08);"></div>
+            <div class="featured-media skeleton" style="height: 100%; width: 100%;"></div>
+            <div class="featured-overlay" style="display: grid; gap: 8px; z-index: 2;">
+              <div class="featured-kicker skeleton" style="height: 16px; width: 60%;"></div>
+              <div class="featured-line skeleton" style="height: 12px; width: 70%;"></div>
+            </div>
+          </article>
+          <article class="featured-card animate-pulse" style="pointer-events: none;">
+            <div class="featured-badge skeleton" style="height: 24px; width: 70px; border-radius: 999px; border: none; background-color: rgba(255, 255, 255, 0.08);"></div>
+            <div class="featured-media skeleton" style="height: 100%; width: 100%;"></div>
+            <div class="featured-overlay" style="display: grid; gap: 8px; z-index: 2;">
+              <div class="featured-kicker skeleton" style="height: 16px; width: 45%;"></div>
+              <div class="featured-line skeleton" style="height: 12px; width: 80%;"></div>
+            </div>
+          </article>
+          <article class="featured-card animate-pulse" style="pointer-events: none;">
+            <div class="featured-badge skeleton" style="height: 24px; width: 70px; border-radius: 999px; border: none; background-color: rgba(255, 255, 255, 0.08);"></div>
+            <div class="featured-media skeleton" style="height: 100%; width: 100%;"></div>
+            <div class="featured-overlay" style="display: grid; gap: 8px; z-index: 2;">
+              <div class="featured-kicker skeleton" style="height: 16px; width: 55%;"></div>
+              <div class="featured-line skeleton" style="height: 12px; width: 65%;"></div>
+            </div>
+          </article>
+        </div>
       </div>
     </div>
   </section>
@@ -279,14 +313,105 @@
     </header>
 
     <div class="portfolio-toolbar glass reveal">
-      <div class="filters" id="filters"></div>
+      <div class="filters" id="filters">
+        <!-- Skeletons (Shadcn UI style) -->
+        <div class="filter-control animate-pulse">
+          <div class="skeleton" style="height: 32px; width: 65px; border-radius: 999px;"></div>
+        </div>
+        <div class="filter-control animate-pulse">
+          <div class="skeleton" style="height: 32px; width: 85px; border-radius: 999px;"></div>
+        </div>
+        <div class="filter-control animate-pulse">
+          <div class="skeleton" style="height: 32px; width: 75px; border-radius: 999px;"></div>
+        </div>
+        <div class="filter-control animate-pulse">
+          <div class="skeleton" style="height: 32px; width: 90px; border-radius: 999px;"></div>
+        </div>
+      </div>
 
       <div class="search-wrap">
         <input id="searchInput" type="search" placeholder="Search work..." />
       </div>
     </div>
 
-    <div class="portfolio-grid-advanced" id="portfolioGrid"></div>
+    <div class="portfolio-grid-advanced" id="portfolioGrid">
+      <!-- Skeletons (Shadcn UI style) -->
+      <article class="work-item glass animate-pulse" style="pointer-events: none;">
+        <div class="work-thumb-mini skeleton" style="height: 180px; border: none; background-color: rgba(255, 255, 255, 0.08);"></div>
+        <div class="work-meta" style="margin-top: 14px; display: grid; gap: 8px;">
+          <div class="skeleton" style="height: 16px; width: 65%;"></div>
+          <div class="skeleton" style="height: 12px; width: 90%;"></div>
+          <div class="skeleton" style="height: 12px; width: 75%;"></div>
+          <div class="work-tags" style="margin-top: 6px; display: flex; gap: 8px;">
+            <div class="skeleton" style="height: 24px; width: 55px; border-radius: 999px;"></div>
+            <div class="skeleton" style="height: 24px; width: 65px; border-radius: 999px;"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="work-item glass animate-pulse" style="pointer-events: none;">
+        <div class="work-thumb-mini skeleton" style="height: 180px; border: none; background-color: rgba(255, 255, 255, 0.08);"></div>
+        <div class="work-meta" style="margin-top: 14px; display: grid; gap: 8px;">
+          <div class="skeleton" style="height: 16px; width: 55%;"></div>
+          <div class="skeleton" style="height: 12px; width: 85%;"></div>
+          <div class="skeleton" style="height: 12px; width: 70%;"></div>
+          <div class="work-tags" style="margin-top: 6px; display: flex; gap: 8px;">
+            <div class="skeleton" style="height: 24px; width: 60px; border-radius: 999px;"></div>
+            <div class="skeleton" style="height: 24px; width: 50px; border-radius: 999px;"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="work-item glass animate-pulse no-thumb" style="pointer-events: none;">
+        <div class="work-meta" style="display: grid; gap: 8px;">
+          <div class="skeleton" style="height: 16px; width: 50%;"></div>
+          <div class="skeleton" style="height: 12px; width: 85%;"></div>
+          <div class="skeleton" style="height: 12px; width: 60%;"></div>
+          <div class="work-tags" style="margin-top: 6px; display: flex; gap: 8px;">
+            <div class="skeleton" style="height: 24px; width: 60px; border-radius: 999px;"></div>
+            <div class="skeleton" style="height: 24px; width: 50px; border-radius: 999px;"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="work-item glass animate-pulse" style="pointer-events: none;">
+        <div class="work-thumb-mini skeleton" style="height: 180px; border: none; background-color: rgba(255, 255, 255, 0.08);"></div>
+        <div class="work-meta" style="margin-top: 14px; display: grid; gap: 8px;">
+          <div class="skeleton" style="height: 16px; width: 60%;"></div>
+          <div class="skeleton" style="height: 12px; width: 90%;"></div>
+          <div class="skeleton" style="height: 12px; width: 75%;"></div>
+          <div class="work-tags" style="margin-top: 6px; display: flex; gap: 8px;">
+            <div class="skeleton" style="height: 24px; width: 55px; border-radius: 999px;"></div>
+            <div class="skeleton" style="height: 24px; width: 65px; border-radius: 999px;"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="work-item glass animate-pulse" style="pointer-events: none;">
+        <div class="work-thumb-mini skeleton" style="height: 180px; border: none; background-color: rgba(255, 255, 255, 0.08);"></div>
+        <div class="work-meta" style="margin-top: 14px; display: grid; gap: 8px;">
+          <div class="skeleton" style="height: 16px; width: 70%;"></div>
+          <div class="skeleton" style="height: 12px; width: 80%;"></div>
+          <div class="skeleton" style="height: 12px; width: 75%;"></div>
+          <div class="work-tags" style="margin-top: 6px; display: flex; gap: 8px;">
+            <div class="skeleton" style="height: 24px; width: 50px; border-radius: 999px;"></div>
+            <div class="skeleton" style="height: 24px; width: 60px; border-radius: 999px;"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="work-item glass animate-pulse no-thumb" style="pointer-events: none;">
+        <div class="work-meta" style="display: grid; gap: 8px;">
+          <div class="skeleton" style="height: 16px; width: 45%;"></div>
+          <div class="skeleton" style="height: 12px; width: 80%;"></div>
+          <div class="skeleton" style="height: 12px; width: 65%;"></div>
+          <div class="work-tags" style="margin-top: 6px; display: flex; gap: 8px;">
+            <div class="skeleton" style="height: 24px; width: 55px; border-radius: 999px;"></div>
+            <div class="skeleton" style="height: 24px; width: 55px; border-radius: 999px;"></div>
+          </div>
+        </div>
+      </article>
+    </div>
   </section>
 
   <!-- ===== TOOLS SECTION (BARU) ===== -->

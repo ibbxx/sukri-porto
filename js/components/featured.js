@@ -69,11 +69,19 @@ export function initFeatured() {
     return;
   }
 
-  // Marquee handler
   if (marquee) {
     const loopItems = baseItems.concat(baseItems);
     track.innerHTML = loopItems.map(buildFeaturedCard).join("");
-    attachTiltTo(".featured-card.tilt");
+  } else {
+    track.innerHTML = baseItems.map(buildFeaturedCard).join("");
+  }
+  attachTiltTo(".featured-card.tilt");
+
+  if (track.dataset.initialized === "1") return;
+  track.dataset.initialized = "1";
+
+  // Marquee handler
+  if (marquee) {
 
     const openById = (id) => {
       const item = portfolioData.find((x) => x.id === id);

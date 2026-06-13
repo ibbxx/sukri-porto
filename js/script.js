@@ -84,7 +84,7 @@ function buildPortfolioData(items, subs) {
       if (ytId) embedUrl = `https://www.youtube.com/embed/${ytId}`;
     }
     let thumb = safeUrl(row.thumbnail_url);
-    if (!thumb && row.type === 'youtube') {
+    if ((!thumb || String(thumb).includes('via.placeholder.com')) && row.type === 'youtube') {
       const ytId = getYoutubeId(sourceUrl || embedUrl);
       if (ytId) thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
     }
@@ -155,16 +155,68 @@ function applySiteContent(rows) {
   }
 }
 
-async function loadData() {
+async function loadDataAndRender() {
+  const cached = fetchFromCache();
+  let hasCache = false;
+
+  // 1. Render data dari cache secara instan jika ada
+  if (cached && cached.items && cached.items.length) {
+    buildPortfolioData(cached.items, cached.subs);
+    applySiteContent(cached.siteRows);
+    hasCache = true;
+    
+    renderFilters();
+    renderGrid();
+    initPortfolio();
+    initFeatured();
+    initModalEvents();
+
+    const loader = document.getElementById('siteLoader');
+    if (loader) {
+      loader.classList.add('hide');
+      setTimeout(() => loader.remove(), 500);
+    }
+  }
+
+  // 2. Ambil data terbaru di background
   try {
     const { items, subs, siteRows } = await fetchAllData();
     buildPortfolioData(items, subs);
     applySiteContent(siteRows);
+
+    renderFilters();
+    renderGrid();
+    initFeatured();
+
+    if (!hasCache) {
+      initPortfolio();
+      initModalEvents();
+      
+      const loader = document.getElementById('siteLoader');
+      if (loader) {
+        loader.classList.add('hide');
+        setTimeout(() => loader.remove(), 500);
+      }
+    }
   } catch (err) {
     console.warn('⚠️ Supabase fetch gagal, memakai cache:', err.message || err);
-    const { items, subs, siteRows } = fetchFromCache();
-    buildPortfolioData(items, subs);
-    applySiteContent(siteRows);
+    if (!hasCache) {
+      const fallback = fetchFromCache();
+      buildPortfolioData(fallback.items, fallback.subs);
+      applySiteContent(fallback.siteRows);
+      
+      renderFilters();
+      renderGrid();
+      initPortfolio();
+      initFeatured();
+      initModalEvents();
+      
+      const loader = document.getElementById('siteLoader');
+      if (loader) {
+        loader.classList.add('hide');
+        setTimeout(() => loader.remove(), 500);
+      }
+    }
   }
 }
 
@@ -217,20 +269,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   attachMagneticTo(".magnetic");
   initContactForm();
 
-  await loadData();
-
-  renderFilters();
-  renderGrid();
-  initPortfolio();
-  initFeatured();
-  initModalEvents();
-
-  // Hide loader
-  const loader = document.getElementById('siteLoader');
-  if (loader) {
-    loader.classList.add('hide');
-    setTimeout(() => loader.remove(), 500);
-  }
+  await loadDataAndRender();
 
   // Footer year auto update
   const yearEl = document.getElementById("year");

@@ -1,4 +1,4 @@
-import { esc, generateId, getYoutubeId, toast } from '../utils.js';
+import { esc, generateId, getYoutubeId, toast, compressImage } from '../utils.js';
 import { uploadFile, removeMediaUrls, upsertPortfolioItem, replaceSubItems, deletePortfolioItem, upsertSiteContent } from '../api.js';
 
 /* =========================================================
@@ -242,19 +242,30 @@ function setupImagePicker({ fileInputId, pickBtnId, removeBtnId, previewId, onFi
 
   pickBtn?.addEventListener('click', () => fileInput?.click());
 
-  fileInput?.addEventListener('change', (e) => {
-    const file = e.target.files[0];
+  fileInput?.addEventListener('change', async (e) => {
+    let file = e.target.files[0];
     if (!file) return;
-    if (file.size > MAX_FILE_SIZE) {
-      toast('File terlalu besar! Max 1 MB.', 'error');
-      fileInput.value = '';
-      return;
-    }
     if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
       toast('Format gambar harus JPG, PNG, WebP, atau GIF.', 'error');
       fileInput.value = '';
       return;
     }
+    
+    if (file.type !== 'image/gif') {
+      try {
+        toast('Mengompresi gambar...', 'success');
+        file = await compressImage(file, { maxWidth: 1200, maxHeight: 1200, quality: 0.8, mimeType: 'image/jpeg' });
+      } catch (err) {
+        console.warn('Gagal mengompresi gambar, menggunakan file asli:', err);
+      }
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast('File terlalu besar bahkan setelah dikompresi! Max 1 MB.', 'error');
+      fileInput.value = '';
+      return;
+    }
+
     pendingFile = file;
     revoke();
     objectUrl = URL.createObjectURL(file);
@@ -778,12 +789,24 @@ function setupSingleUploader(dropId, fileId, previewId, btnId, contentKey, folde
     if (e.target.files[0]) handleFileSelect(e.target.files[0]);
   });
 
-  function handleFileSelect(file) {
-    if (file.size > MAX_FILE_SIZE) { toast('File terlalu besar! Maksimal 1 MB.', 'error'); return; }
+  async function handleFileSelect(file) {
     if (!ALLOWED_IMAGE_TYPES.has(file.type)) { toast('Format gambar harus JPG, PNG, WebP, atau GIF.', 'error'); return; }
-    selectedFile = file;
+    
+    let compressedFile = file;
+    if (file.type !== 'image/gif') {
+      try {
+        toast('Mengompresi gambar...', 'success');
+        compressedFile = await compressImage(file, { maxWidth: 1600, maxHeight: 1600, quality: 0.8, mimeType: 'image/jpeg' });
+      } catch (err) {
+        console.warn('Gagal mengompresi gambar, menggunakan file asli:', err);
+      }
+    }
+
+    if (compressedFile.size > MAX_FILE_SIZE) { toast('File terlalu besar bahkan setelah dikompresi! Maksimal 1 MB.', 'error'); return; }
+    
+    selectedFile = compressedFile;
     revokePreview();
-    previewUrl = URL.createObjectURL(file);
+    previewUrl = URL.createObjectURL(compressedFile);
     if (preview) preview.src = previewUrl;
     if (saveBtn) saveBtn.disabled = false;
   }
@@ -806,6 +829,7 @@ function setupSingleUploader(dropId, fileId, previewId, btnId, contentKey, folde
         toast('Foto tersimpan, tetapi media lama gagal dibersihkan: ' + cleanupErr.message, 'error');
       }
       toast('Foto profil berhasil diupdate!');
+      if (preview) preview.src = publicUrl;
       selectedFile = null;
       revokePreview();
 
