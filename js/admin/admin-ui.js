@@ -231,6 +231,14 @@ function setupImagePicker({ fileInputId, pickBtnId, removeBtnId, previewId, onFi
   const removeBtn = document.getElementById(removeBtnId);
 
   let pendingFile = null;
+  let objectUrl = null;
+
+  const revoke = () => {
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+      objectUrl = null;
+    }
+  };
 
   pickBtn?.addEventListener('click', () => fileInput?.click());
 
@@ -248,13 +256,16 @@ function setupImagePicker({ fileInputId, pickBtnId, removeBtnId, previewId, onFi
       return;
     }
     pendingFile = file;
-    updateImagePreview(previewId, removeBtnId, URL.createObjectURL(file));
+    revoke();
+    objectUrl = URL.createObjectURL(file);
+    updateImagePreview(previewId, removeBtnId, objectUrl);
     if (onFileSelected) onFileSelected(file);
   });
 
   removeBtn?.addEventListener('click', () => {
     pendingFile = null;
     if (fileInput) fileInput.value = '';
+    revoke();
     updateImagePreview(previewId, removeBtnId, null);
   });
 
@@ -263,6 +274,7 @@ function setupImagePicker({ fileInputId, pickBtnId, removeBtnId, previewId, onFi
     reset: () => {
       pendingFile = null;
       if (fileInput) fileInput.value = '';
+      revoke();
     }
   };
 }
@@ -649,7 +661,14 @@ export function initItemModalEvents(reloadCallback) {
   });
 
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeItemModal();
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteModalOpen = deleteModal && deleteModal.style.display !== 'none';
+    if (e.key === 'Escape' && !deleteModalOpen) {
+      const itemModal = document.getElementById('itemModal');
+      if (itemModal && itemModal.style.display !== 'none') {
+        closeItemModal();
+      }
+    }
   });
 }
 
@@ -701,7 +720,9 @@ export function initDeleteModalEvents(reloadCallback) {
   });
 
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') deleteModal.style.display = 'none';
+    if (e.key === 'Escape' && deleteModal.style.display !== 'none') {
+      deleteModal.style.display = 'none';
+    }
   });
 }
 
@@ -734,6 +755,14 @@ function setupSingleUploader(dropId, fileId, previewId, btnId, contentKey, folde
   const saveBtn = document.getElementById(btnId);
 
   let selectedFile = null;
+  let previewUrl = null;
+
+  const revokePreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
+  };
 
   dropArea?.addEventListener('click', () => fileInput?.click());
   dropArea?.addEventListener('dragover', (e) => { e.preventDefault(); dropArea.classList.add('drag-over'); });
@@ -753,7 +782,9 @@ function setupSingleUploader(dropId, fileId, previewId, btnId, contentKey, folde
     if (file.size > MAX_FILE_SIZE) { toast('File terlalu besar! Maksimal 1 MB.', 'error'); return; }
     if (!ALLOWED_IMAGE_TYPES.has(file.type)) { toast('Format gambar harus JPG, PNG, WebP, atau GIF.', 'error'); return; }
     selectedFile = file;
-    if (preview) preview.src = URL.createObjectURL(file);
+    revokePreview();
+    previewUrl = URL.createObjectURL(file);
+    if (preview) preview.src = previewUrl;
     if (saveBtn) saveBtn.disabled = false;
   }
 
@@ -776,9 +807,12 @@ function setupSingleUploader(dropId, fileId, previewId, btnId, contentKey, folde
       }
       toast('Foto profil berhasil diupdate!');
       selectedFile = null;
+      revokePreview();
 
     } catch (err) {
       try { await removeMediaUrls([uploadedUrl]); } catch {}
+      selectedFile = null;
+      revokePreview();
       if (preview && siteContent[contentKey]) preview.src = siteContent[contentKey];
       toast('Gagal upload: ' + (err.message || err), 'error');
     } finally {

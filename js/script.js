@@ -51,15 +51,13 @@ function attachMagneticTo(selector) {
     if (btn.dataset.magnetBound === "1") return;
     btn.dataset.magnetBound = "1";
 
-    let rect;
     const move = (e) => {
-      rect = rect || btn.getBoundingClientRect();
+      const rect = btn.getBoundingClientRect();
       const x = e.clientX - (rect.left + rect.width / 2);
       const y = e.clientY - (rect.top + rect.height / 2);
       btn.style.transform = `translate(${x * 0.18}px, ${y * 0.18}px)`;
     };
     const leave = () => {
-      rect = null;
       btn.style.transform = "translate(0px, 0px)";
     };
 

@@ -31,9 +31,13 @@ export async function fetchAllData() {
   const siteRows = siteRes.data || [];
 
   // Cache
-  localStorage.setItem(CACHE_KEY_PORTFOLIO, JSON.stringify(items));
-  localStorage.setItem(CACHE_KEY_SUBS, JSON.stringify(subs));
-  localStorage.setItem(CACHE_KEY_SITE, JSON.stringify(siteRows));
+  try {
+    localStorage.setItem(CACHE_KEY_PORTFOLIO, JSON.stringify(items));
+    localStorage.setItem(CACHE_KEY_SUBS, JSON.stringify(subs));
+    localStorage.setItem(CACHE_KEY_SITE, JSON.stringify(siteRows));
+  } catch (cacheErr) {
+    console.warn('Gagal menyimpan cache ke localStorage:', cacheErr);
+  }
 
   return { items, subs, siteRows };
 }
@@ -118,8 +122,14 @@ export async function deletePortfolioItem(id) {
 export async function replaceSubItems(parentId, type, editingSubItems, allSubs) {
   const client = getClient();
   const oldIds = allSubs.filter(s => s.parent_id === parentId).map(s => s.id);
-  let insertedIds = [];
 
+  // 1. Delete data lama terlebih dahulu
+  if (oldIds.length) {
+    const { error: deleteError } = await client.from('portfolio_sub_items').delete().in('id', oldIds);
+    if (deleteError) throw deleteError;
+  }
+
+  // 2. Insert data baru
   if (type === 'drive_folder' && editingSubItems.length) {
     const subRows = editingSubItems.map((s, i) => {
       let embedUrl = s.embed_url || '';
@@ -137,22 +147,11 @@ export async function replaceSubItems(parentId, type, editingSubItems, allSubs) 
       };
     });
 
-    const { data, error } = await client
+    const { error: insertError } = await client
       .from('portfolio_sub_items')
-      .insert(subRows)
-      .select('id');
-    if (error) throw error;
-    insertedIds = (data || []).map(row => row.id);
+      .insert(subRows);
+    if (insertError) throw insertError;
   }
-
-  if (!oldIds.length) return;
-  const { error } = await client.from('portfolio_sub_items').delete().in('id', oldIds);
-  if (!error) return;
-
-  if (insertedIds.length) {
-    await client.from('portfolio_sub_items').delete().in('id', insertedIds);
-  }
-  throw error;
 }
 
 export async function upsertSiteContent(key, value) {

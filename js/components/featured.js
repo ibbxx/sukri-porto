@@ -207,7 +207,8 @@ export function initFeatured() {
     });
 
     track.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter") return;
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
       const card = e.target.closest(".featured-card");
       if (!card) return;
       openById(card.dataset.id);

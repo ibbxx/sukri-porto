@@ -104,6 +104,6 @@ export function getDriveEmbedUrl(url) {
   if (idQueryMatch && idQueryMatch[1]) {
     return `https://drive.google.com/file/d/${idQueryMatch[1]}/preview`;
   }
-  return raw;
+  return '';
 }
 
