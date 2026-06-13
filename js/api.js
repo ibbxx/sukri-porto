@@ -4,6 +4,7 @@
 
 // Kita asumsikan supabaseClient sudah tersedia di window, karena di-load via script tag.
 import { supabaseClient } from './supabase-config.js';
+import { getDriveEmbedUrl } from './utils.js';
 
 const getClient = () => supabaseClient;
 
@@ -120,15 +121,21 @@ export async function replaceSubItems(parentId, type, editingSubItems, allSubs) 
   let insertedIds = [];
 
   if (type === 'drive_folder' && editingSubItems.length) {
-    const subRows = editingSubItems.map((s, i) => ({
-      parent_id: parentId,
-      title: s.title || `Item ${i + 1}`,
-      type: s.type || 'drive_video',
-      source_url: s.source_url || '',
-      embed_url: s.embed_url || '',
-      folder_url: s.folder_url || '',
-      sort_order: i,
-    }));
+    const subRows = editingSubItems.map((s, i) => {
+      let embedUrl = s.embed_url || '';
+      if ((s.type === 'drive_video' || s.type === 'drive_image') && s.source_url) {
+        embedUrl = getDriveEmbedUrl(s.source_url);
+      }
+      return {
+        parent_id: parentId,
+        title: s.title || `Item ${i + 1}`,
+        type: s.type || 'drive_video',
+        source_url: s.source_url || '',
+        embed_url: embedUrl,
+        folder_url: s.folder_url || s.source_url || '',
+        sort_order: i,
+      };
+    });
 
     const { data, error } = await client
       .from('portfolio_sub_items')

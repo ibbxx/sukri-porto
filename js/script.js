@@ -1,4 +1,4 @@
-import { safeUrl, getYoutubeId, guessIgThumb } from './utils.js';
+import { safeUrl, getYoutubeId, guessIgThumb, getDriveEmbedUrl } from './utils.js';
 import { fetchAllData, fetchFromCache } from './api.js';
 import { initModalEvents } from './components/modal.js';
 import { setPortfolioData, renderFilters, renderGrid, initPortfolio } from './components/portfolio.js';
@@ -107,13 +107,19 @@ function buildPortfolioData(items, subs) {
     };
 
     if (row.type === 'drive_folder' && subsMap[row.id]) {
-      item.items = subsMap[row.id].map(sub => ({
-        title: sub.title,
-        type: sub.type || 'drive_video',
-        sourceUrl: safeUrl(sub.source_url),
-        embedUrl: safeUrl(sub.embed_url),
-        folderUrl: safeUrl(sub.folder_url),
-      }));
+      item.items = subsMap[row.id].map(sub => {
+        let embedUrl = safeUrl(sub.embed_url);
+        if ((sub.type === 'drive_video' || sub.type === 'drive_image')) {
+          embedUrl = getDriveEmbedUrl(embedUrl || sub.source_url);
+        }
+        return {
+          title: sub.title,
+          type: sub.type || 'drive_video',
+          sourceUrl: safeUrl(sub.source_url),
+          embedUrl: safeUrl(embedUrl),
+          folderUrl: safeUrl(sub.folder_url),
+        };
+      });
     }
 
     return item;

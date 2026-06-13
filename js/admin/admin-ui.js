@@ -351,7 +351,7 @@ function updateSubItemsUI() {
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-[9px] font-bold text-zinc-400 uppercase tracking-wider">URL</label>
-          <input type="text" value="${esc(sub.source_url || sub.embed_url || '')}" data-field="url" placeholder="https://drive.google.com/..." class="bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-400 w-full" />
+          <input type="text" value="${esc(sub.folder_url || sub.source_url || sub.embed_url || '')}" data-field="url" placeholder="https://drive.google.com/..." class="bg-zinc-900 border border-zinc-800 rounded-md px-2.5 py-1.5 text-xs text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-400 w-full" />
         </div>
       </div>
       <button type="button" class="absolute top-3 right-3 bg-transparent hover:bg-red-950/20 border border-zinc-800 hover:border-red-900/30 text-zinc-400 hover:text-red-400 w-7 h-7 rounded-md flex items-center justify-center transition-colors sub-remove-btn" data-idx="${idx}">✕</button>
@@ -367,9 +367,10 @@ function updateSubItemsUI() {
       if (!editingSubItems[idx]) return;
 
       if (field === 'url') {
-        // Simpan ke source_url dan embed_url sekaligus
+        // Simpan ke source_url, embed_url, dan folder_url sekaligus
         editingSubItems[idx].source_url = inp.value;
         editingSubItems[idx].embed_url = inp.value;
+        editingSubItems[idx].folder_url = inp.value;
       } else {
         editingSubItems[idx][field] = inp.value;
       }

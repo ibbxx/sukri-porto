@@ -1,6 +1,7 @@
 import { escapeAttr, escapeHtml } from '../utils.js';
 
 let openModalCount = 0;
+let isProgrammaticScroll = false;
 
 /* =========================================================
    SINGLE ITEM MODAL
@@ -134,11 +135,17 @@ function snapTo(index, smooth = true) {
   if (!catTrack) return;
   const slide = catTrack.querySelector(`.slide[data-idx="${index}"]`);
   if (!slide) return;
+  
+  isProgrammaticScroll = true;
   slide.scrollIntoView({
     behavior: smooth ? "smooth" : "auto",
     inline: "center",
     block: "nearest",
   });
+  
+  setTimeout(() => {
+    isProgrammaticScroll = false;
+  }, smooth ? 400 : 50);
 }
 
 function buildSlideMedia(item) {
@@ -370,8 +377,10 @@ export function initModalEvents() {
   let scrollTimer;
   if (catTrack) {
     catTrack.addEventListener("scroll", () => {
+      if (isProgrammaticScroll) return;
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(() => {
+        if (isProgrammaticScroll) return;
         const slides = Array.from(catTrack.querySelectorAll(".slide"));
         if (!slides.length) return;
 

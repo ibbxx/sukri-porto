@@ -90,3 +90,20 @@ export function toast(message, type = 'success') {
     setTimeout(() => el.remove(), 300); 
   }, 3500);
 }
+
+export function getDriveEmbedUrl(url) {
+  if (!url) return '';
+  const raw = String(url).trim();
+  // Matching file/d/[ID]
+  const fileIdMatch = raw.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (fileIdMatch && fileIdMatch[1]) {
+    return `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
+  }
+  // Matching open?id=[ID] or open?id=[ID]&...
+  const idQueryMatch = raw.match(/[\?&]id=([a-zA-Z0-9_-]+)/);
+  if (idQueryMatch && idQueryMatch[1]) {
+    return `https://drive.google.com/file/d/${idQueryMatch[1]}/preview`;
+  }
+  return raw;
+}
+
