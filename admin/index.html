@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel — Fiqri Surya Portfolio</title>
+  <link rel="icon" type="image/png" href="../asset/image.png" />
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -668,7 +669,26 @@
         <!-- Featured Checkbox -->
         <div class="flex items-center gap-2 border-t border-zinc-800 pt-3">
           <input type="checkbox" id="itemFeatured" class="w-4 h-4 rounded bg-zinc-900 border-zinc-800 text-zinc-100 accent-zinc-500 focus:ring-0 focus:ring-offset-0" />
-          <label for="itemFeatured" class="text-xs text-zinc-200 cursor-pointer font-medium select-none">Tampilkan di bagian Featured (Marquee) — menggunakan thumbnail di atas</label>
+          <label for="itemFeatured" class="text-xs text-zinc-200 cursor-pointer font-medium select-none">Tampilkan di bagian Featured (Marquee)</label>
+        </div>
+
+        <!-- Featured Thumbnail (opsional, muncul jika Featured dicentang) -->
+        <div class="flex flex-col gap-1.5 border-t border-zinc-800 pt-3" id="featuredThumbSection" style="display:none">
+          <label class="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Thumbnail Featured <span class="text-zinc-600">(opsional — jika kosong, pakai thumbnail utama)</span></label>
+          <div class="flex gap-4 items-start">
+            <div class="w-16 h-16 rounded-md overflow-hidden bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0" id="featuredThumbPreview">
+              <span class="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">No Image</span>
+            </div>
+            <div class="flex-1 flex flex-col gap-2">
+              <input type="file" id="featuredThumbFile" accept="image/jpeg,image/png,image/webp,image/gif" hidden />
+              <div class="flex gap-2">
+                <button type="button" class="bg-transparent hover:bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs py-1.5 px-3 rounded-md font-medium transition-colors" id="featuredThumbPickBtn">Pilih Gambar</button>
+                <button type="button" class="bg-transparent hover:bg-red-950/20 border border-zinc-800 hover:border-red-900/30 text-red-400 text-xs py-1.5 px-3 rounded-md font-medium transition-colors" id="featuredThumbRemoveBtn" style="display:none">Hapus</button>
+              </div>
+              <p class="text-[10px] text-zinc-500">Ukuran portrait (320×420) disarankan untuk marquee. Max 1 MB.</p>
+              <input type="hidden" id="itemFeaturedThumbUrl" />
+            </div>
+          </div>
         </div>
 
         <!-- Sub-items (untuk drive_folder) -->

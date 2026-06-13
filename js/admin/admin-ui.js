@@ -272,6 +272,7 @@ function setupImagePicker({ fileInputId, pickBtnId, removeBtnId, previewId, onFi
 ========================================================= */
 let editingSubItems = [];
 let thumbPicker = null;
+let featuredThumbPicker = null;
 
 /**
  * Auto-detect dan konversi URL ke embed & source berdasarkan tipe.
@@ -440,6 +441,18 @@ function openItemModal(item = null, reloadCallback) {
   if (thumbPicker) thumbPicker.reset();
   updateImagePreview('thumbPreview', 'thumbRemoveBtn', thumbUrl || null);
 
+  // Featured Thumbnail (terpisah)
+  const featuredThumbUrl = isEdit ? (item.featured_thumb || '') : '';
+  document.getElementById('itemFeaturedThumbUrl').value = featuredThumbUrl;
+  if (featuredThumbPicker) featuredThumbPicker.reset();
+  updateImagePreview('featuredThumbPreview', 'featuredThumbRemoveBtn', featuredThumbUrl || null);
+
+  // Toggle visibility of featured thumb section
+  const featuredThumbSection = document.getElementById('featuredThumbSection');
+  if (featuredThumbSection) {
+    featuredThumbSection.style.display = document.getElementById('itemFeatured').checked ? 'flex' : 'none';
+  }
+
   // Sub-items
   editingSubItems = isEdit
     ? allSubs.filter(s => s.parent_id === item.id).map(s => ({ ...s }))
@@ -514,6 +527,29 @@ export function initItemModalEvents(reloadCallback) {
     document.getElementById('itemThumbUrl').value = '';
   });
 
+  // Featured Thumbnail picker (terpisah)
+  featuredThumbPicker = setupImagePicker({
+    fileInputId: 'featuredThumbFile',
+    pickBtnId: 'featuredThumbPickBtn',
+    removeBtnId: 'featuredThumbRemoveBtn',
+    previewId: 'featuredThumbPreview',
+    onFileSelected: () => {
+      document.getElementById('itemFeaturedThumbUrl').value = '';
+    }
+  });
+
+  document.getElementById('featuredThumbRemoveBtn')?.addEventListener('click', () => {
+    document.getElementById('itemFeaturedThumbUrl').value = '';
+  });
+
+  // Toggle featured thumb section visibility
+  document.getElementById('itemFeatured')?.addEventListener('change', (e) => {
+    const featuredThumbSection = document.getElementById('featuredThumbSection');
+    if (featuredThumbSection) {
+      featuredThumbSection.style.display = e.target.checked ? 'flex' : 'none';
+    }
+  });
+
   // === SAVE LOGIC ===
   document.getElementById('itemForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -555,8 +591,16 @@ export function initItemModalEvents(reloadCallback) {
         uploadedUrls.push(thumbnailUrl);
       }
 
-      // Featured thumb = sama dengan thumbnail utama
-      const featuredThumb = isFeatured ? thumbnailUrl : '';
+      // Featured thumb: gunakan file terpisah jika ada, atau fallback ke URL existing/thumbnail utama
+      let featuredThumb = '';
+      if (isFeatured) {
+        if (featuredThumbPicker.getFile()) {
+          featuredThumb = await uploadFile(featuredThumbPicker.getFile(), 'thumbnails');
+          uploadedUrls.push(featuredThumb);
+        } else {
+          featuredThumb = document.getElementById('itemFeaturedThumbUrl').value || thumbnailUrl;
+        }
+      }
 
       const row = {
         id, title, category, type,

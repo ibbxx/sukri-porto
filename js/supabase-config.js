@@ -11,3 +11,6 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 export const supabaseClient = (window.supabase && typeof window.supabase.createClient === 'function')
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
+
+// Expose ke global scope agar bisa diakses dari console (e.g. migrate-data.js)
+if (supabaseClient) window.supabaseClient = supabaseClient;

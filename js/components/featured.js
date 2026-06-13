@@ -96,7 +96,9 @@ export function initFeatured() {
       openById(card.dataset.id);
     });
 
-    let paused = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let isHovered = false;
+    let paused = prefersReducedMotion;
     let last = performance.now();
     const mqMobile = window.matchMedia("(max-width: 560px)");
     let speed = mqMobile.matches ? 0.14 : 0.28;
@@ -104,6 +106,14 @@ export function initFeatured() {
     const syncSpeed = () => (speed = mqMobile.matches ? 0.14 : 0.28);
     mqMobile.addEventListener?.("change", syncSpeed);
     window.addEventListener("resize", syncSpeed);
+
+    // Track changes to reduced-motion preference
+    const mqMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    mqMotion.addEventListener?.("change", (e) => {
+      prefersReducedMotion = e.matches;
+      paused = prefersReducedMotion || isHovered;
+      if (!prefersReducedMotion) requestAnimationFrame(tick);
+    });
 
     const tick = (now) => {
       let dt = now - last;
@@ -116,17 +126,17 @@ export function initFeatured() {
         if (marquee.scrollLeft >= half) marquee.scrollLeft = 0;
       }
 
-      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (!prefersReducedMotion) {
         requestAnimationFrame(tick);
       }
     };
 
-    marquee.addEventListener("mouseenter", () => (paused = true));
-    marquee.addEventListener("mouseleave", () => (paused = false));
-    marquee.addEventListener("touchstart", () => (paused = true), { passive: true });
-    marquee.addEventListener("touchend", () => (paused = false), { passive: true });
+    marquee.addEventListener("mouseenter", () => { isHovered = true; paused = true; });
+    marquee.addEventListener("mouseleave", () => { isHovered = false; paused = prefersReducedMotion; });
+    marquee.addEventListener("touchstart", () => { isHovered = true; paused = true; }, { passive: true });
+    marquee.addEventListener("touchend", () => { isHovered = false; paused = prefersReducedMotion; }, { passive: true });
 
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (!prefersReducedMotion) {
       requestAnimationFrame(tick);
     }
     return;

@@ -117,7 +117,8 @@ function ensureSlideMedia(index) {
   if (!slot || slot.dataset.hydrated === "1") return;
   slot.innerHTML = catMediaBuilder(catItems[index]);
   slot.dataset.hydrated = "1";
-  processInstagramEmbeds();
+  // Delay IG embed processing to avoid race condition with DOM insertion
+  setTimeout(() => { processInstagramEmbeds(); setTimeout(processInstagramEmbeds, 350); }, 50);
 }
 
 function updateCatUI() {
@@ -155,7 +156,7 @@ function buildSlideMedia(item) {
   if ((item.type === "drive_video" || item.type === "drive_image") && item.embedUrl) {
     return `<iframe class="slide-media" src="${escapeAttr(item.embedUrl)}" loading="lazy" allow="autoplay" allowfullscreen></iframe>`;
   }
-  if ((item.type === "instagram_embed" || item.type === "link") && item.sourceUrl && String(item.sourceUrl).includes("instagram.com/p/")) {
+  if ((item.type === "instagram_embed" || item.type === "link") && item.sourceUrl && /instagram\.com\/(?:p|reel|tv)\//i.test(String(item.sourceUrl))) {
     return `
       <div class="slide-media" style="display:flex; justify-content:center; align-items:center; background:#fff; overflow:auto; padding:14px;">
         <blockquote class="instagram-media" data-instgrm-permalink="${escapeAttr(item.sourceUrl)}" data-instgrm-version="14"></blockquote>
@@ -410,9 +411,11 @@ export function initModalEvents() {
       let isDown = false;
       let startX = 0;
       let startLeft = 0;
+      let wasDragging = false;
 
       catTrack.addEventListener("mousedown", (e) => {
         isDown = true;
+        wasDragging = false;
         catTrack.style.scrollBehavior = "auto";
         startX = e.pageX;
         startLeft = catTrack.scrollLeft;
@@ -431,8 +434,18 @@ export function initModalEvents() {
         if (!isDown) return;
         e.preventDefault();
         const dx = e.pageX - startX;
+        if (Math.abs(dx) > 5) wasDragging = true;
         catTrack.scrollLeft = startLeft - dx;
       });
+
+      // Prevent accidental clicks on links/buttons after drag-to-scroll
+      catTrack.addEventListener("click", (e) => {
+        if (wasDragging) {
+          e.stopPropagation();
+          e.preventDefault();
+          wasDragging = false;
+        }
+      }, true);
     }
   }
 
